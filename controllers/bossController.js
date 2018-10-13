@@ -58,3 +58,22 @@ exports.getBossByGame = function(req, res)
         }
     );
 }
+
+exports.addBoss = function(req, res)
+{
+    let boss = new Boss(0, req.body.name, req.body.hp);
+    db.query('insert into boss (b_name, hp) values (\'' 
+        + boss.name + '\', ' + boss.hp + ')', function(err, results)
+        {
+            if (err)
+            {
+                console.log(err);
+                res.json('Error in DB');
+            } else {
+                res.json({
+                    message: 'Success',
+                    code : 0
+                });
+            }
+        });
+};

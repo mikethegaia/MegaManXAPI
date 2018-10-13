@@ -9,5 +9,7 @@ router.get('/', bossController.getBosses);
 router.get('/:id', bossController.getBossByID);
 //Boss by game
 router.get('/game/:id', bossController.getBossByGame);
+//Add a boss
+router.post('/', bossController.addBoss);
 
 module.exports = router;
