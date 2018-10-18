@@ -30,7 +30,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`boss` (
   PRIMARY KEY (`boss_id`),
   UNIQUE INDEX `boss_id_UNIQUE` (`boss_id` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 13
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -48,7 +47,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`game` (
   PRIMARY KEY (`game_id`),
   UNIQUE INDEX `game_id_UNIQUE` (`game_id` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 9
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -66,7 +64,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`player` (
   PRIMARY KEY (`player_id`),
   UNIQUE INDEX `character_id_UNIQUE` (`player_id` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 4
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -91,7 +88,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`weapon` (
     FOREIGN KEY (`player_id`)
     REFERENCES `megamanx`.`player` (`player_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 33
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -117,7 +113,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_boss_weapon` (
     FOREIGN KEY (`weapon_id`)
     REFERENCES `megamanx`.`weapon` (`weapon_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 65
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -140,7 +135,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_boss` (
     FOREIGN KEY (`game_id`)
     REFERENCES `megamanx`.`game` (`game_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 9
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -162,7 +156,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_player` (
     FOREIGN KEY (`player_id`)
     REFERENCES `megamanx`.`player` (`player_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 16
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
