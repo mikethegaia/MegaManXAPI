@@ -7,6 +7,7 @@ const logger = require('morgan');
 const bodyparser = require('body-parser');
 
 const indexRouter = require('./routes/index');
+const gamesRouter = require('./routes/games');
 const bossesRouter = require('./routes/bosses');
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(bodyparser.urlencoded({extended: true}));
 app.use(bodyparser.json());
 
 app.use('/', indexRouter);
+app.use('/games', gamesRouter);
 app.use('/bosses', bossesRouter);
 
 // catch 404 and forward to error handler
