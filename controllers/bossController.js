@@ -1,10 +1,20 @@
 const getConnection = require('../utils/dbconnection');
 const Promise = require('bluebird');
 const path = require('path');
+const media = path.join(__dirname, '../media');
 const fs = require('fs');
 const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: function(req, file, cb)
+    {
+        cb(null, media);
+    },
+    filename: function(req, file, cb){
+        cb(null, req.body.game_id + req.body.name + Date.now())
+    }
+});
 const uploadImage = multer({
-    dest: path.join(__dirname, '../media'),
+    storage: storage,
     fileFilter: function (req, file, cb){
         if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png')
         {
@@ -35,9 +45,9 @@ exports.getBossByID = function (req, res)
 
 exports.insertBossByGame = function (req, res)
 {
-    if (!fs.existsSync(path.join(__dirname, '../media'))) 
+    if (!fs.existsSync(media)) 
     {
-		fs.mkdirSync(path.join(__dirname, '../media'));
+		fs.mkdirSync(media);
 	}
     Promise.promisify(uploadImage)(req, res)
         .then( function () {
@@ -47,7 +57,7 @@ exports.insertBossByGame = function (req, res)
             return Promise.using(getConnection(), function(connection)
             {
                 let sqlQuery = 'CALL Q_Insert_Boss_By_Game(?,?,?,?,?,?)';
-                let sqlData = [req.body.name, req.body.description, req.body.hp, req.body.stage, req.file.originalname, req.body.game_id];
+                let sqlData = [req.body.name, req.body.description, req.body.hp, req.body.stage, req.file.filename, req.body.game_id];
                 return connection.query(sqlQuery, sqlData);
             });
         })
@@ -59,6 +69,11 @@ exports.insertBossByGame = function (req, res)
         .catch( function(err){
             console.log(err);
             if(err.type == 'FILETYPE_NOT_ALLOWED') res.status(415).send({ message: req.imageError.message, errors: req.imageError, data: null });
-            else res.status(500).send({message: 'Error in DB', errors : err, data : null});
+            else {
+                fs.unlink(req.file.path, function(err){
+                    console.log(err);
+                });
+                res.status(500).send({message: 'Error in DB', errors : err, data : null});
+            }
         });
 }
