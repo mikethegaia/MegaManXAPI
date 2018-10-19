@@ -266,6 +266,57 @@ END$$
 DELIMITER ;
 
 -- -----------------------------------------------------
+-- procedure Q_Insert_Boss_By_Game
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Boss_By_Game`(
+	IN _b_name VARCHAR(45),
+    IN _description TEXT,
+    IN _hp INT,
+    IN _stage VARCHAR(45),
+    IN _image VARCHAR(45),
+    IN _game_id INT
+)
+BEGIN
+
+	DECLARE _inserted_boss_id INT;
+
+	INSERT INTO boss
+    (b_name,
+    description,
+    hp,
+    stage,
+    image
+    ) 
+    VALUES 
+	(_b_name,
+    _description,
+    _hp,
+    _stage,
+    _image
+    );
+    
+    SET _inserted_boss_id = LAST_INSERT_ID();
+    
+    INSERT INTO rel_game_boss
+    (
+	game_id,
+    boss_id
+    ) VALUES
+    (
+    _game_id,
+    _inserted_boss_id
+    );
+    
+    SELECT _inserted_boss_id as id;
+    
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
 -- procedure Q_Insert_Game
 -- -----------------------------------------------------
 
