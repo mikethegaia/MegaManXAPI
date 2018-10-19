@@ -18,7 +18,8 @@ const storage = multer.diskStorage({
 });
 const uploadImage = multer({
     storage: storage,
-    fileFilter: function (req, file, cb){
+    fileFilter: function (req, file, cb)
+    {
         if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png')
         {
             cb(null, true);    
@@ -26,7 +27,8 @@ const uploadImage = multer({
             req.imageError = { type: 'FILETYPE_NOT_ALLOWED', message: 'Only .jpeg or .png files are allowed' };
             cb(null, false);
         }
-    }}).single('image');
+    }
+}).single('image');
 
 exports.getBossByID = function (req, res)
 {
