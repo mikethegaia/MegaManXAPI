@@ -7,10 +7,13 @@ const multer = require('multer');
 const storage = multer.diskStorage({
     destination: function(req, file, cb)
     {
-        cb(null, media);
+        if (!fs.existsSync(media)) fs.mkdirSync(media);
+        if (!fs.existsSync(media + '\\' + req.body.game_id)) fs.mkdirSync(media + '\\' + req.body.game_id);
+        cb(null, media + '\\' + req.body.game_id);
     },
     filename: function(req, file, cb){
-        cb(null, req.body.game_id + req.body.name + Date.now())
+        let name = file.originalname.split('.');
+        cb(null, req.body.name.trim() + '-' + Date.now() + '.' + name[1]);
     }
 });
 const uploadImage = multer({
@@ -45,10 +48,6 @@ exports.getBossByID = function (req, res)
 
 exports.insertBossByGame = function (req, res)
 {
-    if (!fs.existsSync(media)) 
-    {
-		fs.mkdirSync(media);
-	}
     Promise.promisify(uploadImage)(req, res)
         .then( function () {
             if(req.imageError){

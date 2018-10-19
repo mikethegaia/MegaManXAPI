@@ -6,4 +6,7 @@ const bossController = require('../controllers/bossController');
 //Boss by id
 router.get('/:id', bossController.getBossByID);
 
+//Insert boss
+router.post('/', bossController.insertBossByGame);
+
 module.exports = router;
