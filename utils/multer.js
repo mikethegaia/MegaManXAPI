@@ -20,7 +20,7 @@ var multer = function (dir, file_req, filter, req, res)
         storage: storage,
         fileFilter: filter
     }).single(file_req);
-    return Promise.promisify(multer)(req, res);
+    return Promise.promisify(u)(req, res);
 }
 
 module.exports = multer;
