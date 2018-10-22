@@ -58,7 +58,7 @@ exports.insertBossByGame = function (req, res)
     .then( function(rows)
     {
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
-        res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
+        res.status(201).send({message: 'Success', errors : null, data : rows[0][0]});
     })
     .catch( function(err){
         console.log(err);
