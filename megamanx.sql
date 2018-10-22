@@ -326,7 +326,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Game`(
 	IN _title VARCHAR(45),
     IN _release_date DATETIME,
     IN _story TEXT,
-    IN _platforms VARCHAR(255)
+    IN _platforms VARCHAR(255),
+    IN _image VARCHAR(45)
 )
     READS SQL DATA
     DETERMINISTIC
@@ -336,12 +337,14 @@ BEGIN
     (title, 
     release_date, 
     story,
-    platforms) 
+    platforms, 
+    image) 
     VALUES
     (_title, 
     _release_date, 
     _story,
-    _platforms);
+    _platforms,
+    _image);
     
     SELECT LAST_INSERT_ID() as id;
 END$$
