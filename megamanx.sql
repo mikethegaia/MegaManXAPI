@@ -24,8 +24,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`boss` (
   `boss_id` INT(11) NOT NULL AUTO_INCREMENT,
   `b_name` VARCHAR(45) NOT NULL,
   `description` TEXT NOT NULL,
-  `hp` INT(11) NOT NULL,
-  `stage` VARCHAR(45) NOT NULL,
   `image` VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (`boss_id`),
   UNIQUE INDEX `boss_id_UNIQUE` (`boss_id` ASC) VISIBLE)
@@ -61,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`player` (
   `gender` VARCHAR(2) NOT NULL,
   `main_weapon` VARCHAR(45) NOT NULL,
   `image` VARCHAR(45) NULL DEFAULT NULL,
+  `image_weapon` VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (`player_id`),
   UNIQUE INDEX `character_id_UNIQUE` (`player_id` ASC) VISIBLE)
 ENGINE = InnoDB
@@ -118,16 +117,37 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
+-- Table `megamanx`.`stage`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `megamanx`.`stage` (
+  `stage_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `s_name` VARCHAR(45) NOT NULL,
+  `description` TEXT NOT NULL,
+  `image` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`stage_id`),
+  UNIQUE INDEX `stage_id_UNIQUE` (`stage_id` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
 -- Table `megamanx`.`rel_game_boss`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_boss` (
   `rel_game_boss_id` INT(11) NOT NULL AUTO_INCREMENT,
   `game_id` INT(11) NOT NULL,
   `boss_id` INT(11) NOT NULL,
+  `hp` INT(11) NOT NULL,
+  `stage_id` INT(11) NOT NULL,
   PRIMARY KEY (`rel_game_boss_id`),
   UNIQUE INDEX `rel_game_boss_id_UNIQUE` (`rel_game_boss_id` ASC) VISIBLE,
   INDEX `game_id_idx` (`game_id` ASC) VISIBLE,
   INDEX `boss_id_idx` (`boss_id` ASC) VISIBLE,
+  INDEX `FK_RGB_Stage_idx` (`stage_id` ASC) VISIBLE,
+  CONSTRAINT `FK_RGB_Stage`
+    FOREIGN KEY (`stage_id`)
+    REFERENCES `megamanx`.`stage` (`stage_id`),
   CONSTRAINT `boss_id2`
     FOREIGN KEY (`boss_id`)
     REFERENCES `megamanx`.`boss` (`boss_id`),
@@ -167,21 +187,36 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`x_armor` (
   `x_armor_id` INT(11) NOT NULL AUTO_INCREMENT,
   `x_name` VARCHAR(45) NOT NULL,
   `head_effect` TEXT NOT NULL,
-  `head_stage` VARCHAR(45) NOT NULL,
+  `head_stage` INT(11) NOT NULL,
+  `head_image` VARCHAR(45) NULL DEFAULT NULL,
   `body_effect` TEXT NOT NULL,
-  `body_stage` VARCHAR(45) NOT NULL,
+  `body_stage` INT(11) NOT NULL,
+  `body_image` VARCHAR(45) NULL DEFAULT NULL,
   `arm_effect` TEXT NOT NULL,
-  `arm_stage` VARCHAR(45) NOT NULL,
+  `arm_stage` INT(11) NOT NULL,
+  `arm_image` VARCHAR(45) NULL DEFAULT NULL,
   `foot_effect` TEXT NOT NULL,
-  `foot_stage` VARCHAR(45) NOT NULL,
+  `foot_stage` INT(11) NOT NULL,
+  `foot_image` VARCHAR(45) NULL DEFAULT NULL,
   `image` VARCHAR(45) NULL DEFAULT NULL,
-  `game_id` INT(11) NOT NULL,
   PRIMARY KEY (`x_armor_id`),
   UNIQUE INDEX `x_armor_id_UNIQUE` (`x_armor_id` ASC) VISIBLE,
-  INDEX `FK_Game_ID_idx` (`game_id` ASC) VISIBLE,
-  CONSTRAINT `FK_Game_ID`
-    FOREIGN KEY (`game_id`)
-    REFERENCES `megamanx`.`game` (`game_id`))
+  INDEX `FK_Head_Stage_idx` (`head_stage` ASC) VISIBLE,
+  INDEX `FK_Body_Stage_idx` (`body_stage` ASC) VISIBLE,
+  INDEX `FK_Arm_Stage_idx` (`arm_stage` ASC) VISIBLE,
+  INDEX `FK_Foot_Stage_idx` (`foot_stage` ASC) VISIBLE,
+  CONSTRAINT `FK_Arm_Stage`
+    FOREIGN KEY (`arm_stage`)
+    REFERENCES `megamanx`.`stage` (`stage_id`),
+  CONSTRAINT `FK_Body_Stage`
+    FOREIGN KEY (`body_stage`)
+    REFERENCES `megamanx`.`stage` (`stage_id`),
+  CONSTRAINT `FK_Foot_Stage`
+    FOREIGN KEY (`foot_stage`)
+    REFERENCES `megamanx`.`stage` (`stage_id`),
+  CONSTRAINT `FK_Head_Stage`
+    FOREIGN KEY (`head_stage`)
+    REFERENCES `megamanx`.`stage` (`stage_id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -201,10 +236,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Boss_By_ID`(
     DETERMINISTIC
 BEGIN
 	
-    SELECT boss_id as id, b_name as 'name', 
-    description, hp, stage, image
+    SELECT boss.boss_id as id, b_name as 'name', 
+    description, hp, stage, boss.image, weapon_id as 'id_weapon',
+    w_name as 'weapon'
     FROM boss
-    WHERE boss_id = _boss_id;
+    LEFT JOIN weapon 
+    ON boss.boss_id = weapon.boss_id
+    WHERE boss.boss_id = _boss_id;
     
 END$$
 
