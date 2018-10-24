@@ -356,8 +356,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Boss`(
 )
 BEGIN
 
-	DECLARE _inserted_boss_id INT;
-
 	INSERT INTO boss
     (b_name,
     description,
@@ -406,6 +404,85 @@ BEGIN
     _image);
     
     SELECT LAST_INSERT_ID() as id;
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure Q_Insert_Game_Boss
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Game_Boss`(
+	IN _game_id INT,
+    IN _boss_id INT,
+    IN _hp INT,
+    IN _stage_id INT
+)
+BEGIN
+
+	DECLARE _count_game INT;
+    DECLARE _count_boss INT;
+	DECLARE _count_stage INT;
+    
+    SET _count_game = (SELECT COUNT(*) FROM game WHERE game_id = _game_id);
+    SET _count_boss = (SELECT COUNT(*) FROM boss WHERE boss_id = _boss_id);
+    SET _count_stage = (SELECT COUNT(*) FROM stage WHERE stage_id = _stage_id);
+
+	IF _count_game = 0 THEN
+		SELECT _count_game as id, 'There is no such game.' as message;
+	ELSEIF _count_boss = 0 THEN
+		SELECT _count_boss as id, 'There is no such boss.' as message;
+	ELSEIF _count_stage = 0 THEN
+		SELECT _count_stage as id, 'There is no such stage.' as message;
+	ELSE 
+		INSERT INTO rel_game_boss
+		(game_id,
+		boss_id,
+		hp,
+		stage_id
+		) 
+		VALUES 
+		(_game_id,
+		_boss_id,
+		_hp,
+		_stage_id
+		);
+
+		SELECT LAST_INSERT_ID() as id, 'Success' as message;
+	END IF;
+    
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure Q_Insert_Stage
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Stage`(
+	IN _s_name VARCHAR(45),
+    IN _description TEXT,
+    IN _image VARCHAR(45)
+)
+BEGIN
+
+	INSERT INTO stage
+	(s_name,
+	description,
+	image
+	)
+	VALUES
+	(_s_name,
+	_description,
+	_image
+	);
+	
+	SELECT LAST_INSERT_ID() as id, 'Success' as message;
+
 END$$
 
 DELIMITER ;

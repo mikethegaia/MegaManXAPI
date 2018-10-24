@@ -8,30 +8,51 @@ const upload = require('../utils/upload');
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
 const media = path.join(__dirname, '../media');
-const media_stages = path.join(media, '/stages');
 
 //Rules: creation of the last path and the file's name
 const ruleLastDir = function(req)
 {
-    return path.join(media_stages, '/' + req.body.game_id);
+    return path.join(media, '/stages');
 }
 const ruleName = function(req)
 {
     return req.body.name.replace(/\s/g, '');
 }
 
-//Insert weapon
-/*exports.insertWeaponByGameOwnerWeakness = function (req, res)
+//Insert stage
+
+exports.insertStage = function (req, res)
 {
-    upload([media, media_weapons], ruleLastDir, ruleName, allowedTypes, 'image', req, res)
-    .then( function()
+    upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res)
+    .then( function () 
     {
         if(req.imageError){
             return Promise.reject(req.imageError);
         }
         return Promise.using(getConnection(), function(connection)
         {
-
+            let sqlQuery = 'CALL Q_Insert_Stage(?,?,?)';
+            let sqlData = [req.body.name, req.body.description, req.file.filename];
+            return connection.query(sqlQuery, sqlData);
         });
+    })
+    .then( function(rows)
+    {
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));
+        if (rows[0][0].id <= 0)
+        {
+            return Promise.reject({type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message});
+        }
+        res.status(201).send({message: rows[0][0].message, errors : null, data : rows[0][0]});
+    })
+    .catch( function(err){
+        console.log(err);
+        if(err.type == 'FILETYPE_NOT_ALLOWED') res.status(415).send({ message: req.imageError.message, errors: req.imageError, data: null });
+        else {
+            fs.unlink(req.file.path, function(err){
+                console.log(err);
+            });
+            res.status(500).send({message: 'Error in DB', errors : err, data : null});
+        }
     });
-}*/
+}

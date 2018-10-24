@@ -71,3 +71,26 @@ exports.insertBoss = function (req, res)
         }
     });
 }
+
+//Insert boss in-game data
+exports.insertInGameData = function (req, res)
+{
+    Promise.using(getConnection(), function(connection)
+    {
+        let sqlQuery = 'CALL Q_Insert_Game_Boss(?,?,?,?)';
+        let sqlData = [req.params.game_id, req.params.boss_id, req.body.hp, req.body.stage_id];
+        return connection.query(sqlQuery, sqlData);
+    }).then( function (rows)
+    {
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));
+        if (rows[0][0].id <= 0)
+        {
+            return Promise.reject({type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message});
+        }
+        res.status(201).send({message: rows[0][0].message, errors : null, data : rows[0][0]});
+    }).catch( function (err)
+    {
+        console.log(err);
+        res.status(500).send({message: 'Error in DB', errors : err, data : null});
+    });
+}

@@ -9,4 +9,7 @@ router.get('/:id', bossController.getBossByID);
 //Insert boss
 router.post('/', bossController.insertBoss);
 
+//Insert boss in-game data
+router.post('/:boss_id/game/:game_id', bossController.insertInGameData);
+
 module.exports = router;
