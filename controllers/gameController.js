@@ -35,8 +35,8 @@ exports.getGameByID = function (req, res)
 
         rows[0][0].platforms = JSON.parse(rows[0][0].platforms);
         rows[0][0].players = rows[1];
-        rows[0][0].armors = rows[2];
-        rows[0][0].weakness_chart = rows[3];
+        //rows[0][0].armors = rows[2];
+        rows[0][0].weakness_chart = rows[2];
 
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
     }).catch( function (err)
@@ -58,7 +58,7 @@ exports.insertGame = function (req, res)
         return Promise.using(getConnection(), function(connection)
         {
             let sqlQuery = 'CALL Q_Insert_Game(?,?,?,?,?)';
-            let sqlData = [req.body.title, req.body.release_date, req.body.story, JSON.stringify(req.body.platforms), req.file.filename];
+            let sqlData = [req.body.title, req.body.release_date, req.body.story,req.body.platforms, req.file.filename];
             return connection.query(sqlQuery, sqlData);
         });
     })

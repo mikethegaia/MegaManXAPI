@@ -3,6 +3,7 @@ const router = express.Router();
 
 //Routes
 const bosses = require('./bosses');
+const stages = require('./stages');
 const games = require('./games');
 
 /* GET home page. */
@@ -11,6 +12,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.use('/bosses', bosses);
+router.use('/stages', stages);
 router.use('/games', games);
 
 module.exports = router;

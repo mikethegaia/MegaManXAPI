@@ -51,8 +51,8 @@ exports.insertBossByGame = function (req, res)
         }
         return Promise.using(getConnection(), function(connection)
         {
-            let sqlQuery = 'CALL Q_Insert_Boss_By_Game(?,?,?,?)';
-            let sqlData = [req.body.name, req.body.description, req.file.filename, req.body.game_id];
+            let sqlQuery = 'CALL Q_Insert_Boss_By_Game(?,?,?,?,?)';
+            let sqlData = [req.body.name, req.body.description, req.body.hp, req.file.filename, req.body.game_id];
             return connection.query(sqlQuery, sqlData);
         });
     })

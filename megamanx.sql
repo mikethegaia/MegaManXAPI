@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_boss` (
   `game_id` INT(11) NOT NULL,
   `boss_id` INT(11) NOT NULL,
   `hp` INT(11) NOT NULL,
-  `stage_id` INT(11) NOT NULL,
+  `stage_id` INT(11) NULL DEFAULT NULL,
   PRIMARY KEY (`rel_game_boss_id`),
   UNIQUE INDEX `rel_game_boss_id_UNIQUE` (`rel_game_boss_id` ASC) VISIBLE,
   INDEX `game_id_idx` (`game_id` ASC) VISIBLE,
@@ -314,15 +314,15 @@ BEGIN
     WHERE gp.game_id = _game_id;
     
     -- Armor sets
-    SELECT x_armor_id as id, x_name as 'name',
+    /* SELECT x_armor_id as id, x_name as 'name',
     head_effect as head,
 	body_effect as body, arm_effect as arm,
     foot_effect as foot, image
     FROM x_armor
-    WHERE game_id = _game_id;
+    WHERE game_id = _game_id;*/
     
     -- Weakness Chart
-    SELECT b.boss_id as id, b.b_name as 'name', b.stage,
+    SELECT b.boss_id as id, b.b_name as 'name',
     w.weapon_id as weapon_id, w.w_name as weapon_name,
     wk.weapon_id as weakness_id, wk.w_name as weakness_name
     FROM boss b
@@ -351,6 +351,7 @@ USE `megamanx`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Boss_By_Game`(
 	IN _b_name VARCHAR(45),
     IN _description TEXT,
+    IN _hp INT,
     IN _image VARCHAR(45),
     IN _game_id INT
 )
@@ -374,11 +375,13 @@ BEGIN
     INSERT INTO rel_game_boss
     (
 	game_id,
-    boss_id
+    boss_id,
+    hp
     ) VALUES
     (
     _game_id,
-    _inserted_boss_id
+    _inserted_boss_id,
+    _hp
     );
     
     SELECT _inserted_boss_id as id;
