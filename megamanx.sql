@@ -274,14 +274,14 @@ BEGIN
     ON s.stage_id = gb.stage_id
     INNER JOIN boss b
     ON b.boss_id = gb.boss_id
-    INNER JOIN weapon w
+    LEFT JOIN weapon w
     ON b.boss_id = w.boss_id
-    INNER JOIN rel_boss_weapon bw
+    LEFT JOIN rel_boss_weapon bw
     ON b.boss_id = bw.boss_id
-    INNER JOIN weapon wk
+    LEFT JOIN weapon wk
     ON wk.weapon_id = bw.weapon_id
-    WHERE b.boss_id = _boss_id
-    AND bw.weakness = 1;
+    WHERE b.boss_id = _boss_id;
+    -- AND bw.weakness = 1;
     
 END$$
 
@@ -453,6 +453,75 @@ BEGIN
 		SELECT LAST_INSERT_ID() as id, 'Success' as message;
 	END IF;
     
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure Q_Insert_Game_Player
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Game_Player`(
+	IN _game_id INT,
+    IN _player_id INT
+)
+BEGIN
+
+	DECLARE _count_game INT;
+    DECLARE _count_player INT;
+	SET _count_game = (SELECT COUNT(*) FROM game WHERE game_id = _game_id);
+    SET _count_player = (SELECT COUNT(*) FROM player WHERE player_id = _player_id);
+
+	IF _count_game = 0 THEN
+		SELECT _count_game as id, 'There is no such game.' as message;
+	ELSEIF _count_player = 0 THEN
+		SELECT _count_player as id, 'There is no such player.' as message;
+	ELSE
+		INSERT INTO rel_game_player
+        (game_id,
+		player_id
+        )
+        VALUES
+        (_game_id,
+		_player_id
+        );
+        
+        SELECT LAST_INSERT_ID() as id, 'Success' as message;
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure Q_Insert_Player
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Player`(
+	IN _p_name VARCHAR(45),
+    IN _description TEXT,
+    IN _gender VARCHAR(2),
+    IN _image VARCHAR(45)
+)
+BEGIN
+	INSERT INTO player
+	(p_name,
+    description,
+    gender,
+    image
+	)
+	VALUES
+	(_p_name,
+    _description,
+    _gender,
+    _image
+	);
+	
+	SELECT LAST_INSERT_ID() as id, 'Success' as message;
 END$$
 
 DELIMITER ;
