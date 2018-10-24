@@ -31,6 +31,7 @@ exports.getBossByID = function (req, res)
     }).then( function (rows)
     {
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
+        rows[0][0].infoPerGame = JSON.parse(JSON.stringify(rows[1]));
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
     }).catch( function (err)
     {
@@ -50,8 +51,8 @@ exports.insertBossByGame = function (req, res)
         }
         return Promise.using(getConnection(), function(connection)
         {
-            let sqlQuery = 'CALL Q_Insert_Boss_By_Game(?,?,?,?,?,?)';
-            let sqlData = [req.body.name, req.body.description, req.body.hp, req.body.stage, req.file.filename, req.body.game_id];
+            let sqlQuery = 'CALL Q_Insert_Boss_By_Game(?,?,?,?)';
+            let sqlData = [req.body.name, req.body.description, req.file.filename, req.body.game_id];
             return connection.query(sqlQuery, sqlData);
         });
     })

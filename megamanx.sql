@@ -57,9 +57,7 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`player` (
   `p_name` VARCHAR(45) NOT NULL,
   `description` TEXT NOT NULL,
   `gender` VARCHAR(2) NOT NULL,
-  `main_weapon` VARCHAR(45) NOT NULL,
   `image` VARCHAR(45) NULL DEFAULT NULL,
-  `image_weapon` VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (`player_id`),
   UNIQUE INDEX `character_id_UNIQUE` (`player_id` ASC) VISIBLE)
 ENGINE = InnoDB
@@ -74,18 +72,13 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`weapon` (
   `weapon_id` INT(11) NOT NULL AUTO_INCREMENT,
   `w_name` VARCHAR(45) NOT NULL,
   `image` VARCHAR(45) NULL DEFAULT NULL,
-  `boss_id` INT(11) NOT NULL,
-  `player_id` INT(11) NOT NULL,
+  `boss_id` INT(11) NULL DEFAULT '0',
   PRIMARY KEY (`weapon_id`),
   UNIQUE INDEX `weapon_id_UNIQUE` (`weapon_id` ASC) VISIBLE,
   INDEX `boss_id_idx` (`boss_id` ASC) VISIBLE,
-  INDEX `player_id_idx` (`player_id` ASC) VISIBLE,
   CONSTRAINT `boss_id`
     FOREIGN KEY (`boss_id`)
-    REFERENCES `megamanx`.`boss` (`boss_id`),
-  CONSTRAINT `player_id`
-    FOREIGN KEY (`player_id`)
-    REFERENCES `megamanx`.`player` (`player_id`))
+    REFERENCES `megamanx`.`boss` (`boss_id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -160,6 +153,28 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
+-- Table `megamanx`.`rel_game_boss_weapon`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_boss_weapon` (
+  `rel_game_boss_weapon_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `game_id` INT(11) NOT NULL,
+  `rel_boss_weapon_id` INT(11) NOT NULL,
+  PRIMARY KEY (`rel_game_boss_weapon_id`),
+  UNIQUE INDEX `rel_game_boss_weapon_id_UNIQUE` (`rel_game_boss_weapon_id` ASC) VISIBLE,
+  INDEX `FK_GBW_G_idx` (`game_id` ASC) VISIBLE,
+  INDEX `FK_GBW_BW_idx` (`rel_boss_weapon_id` ASC) VISIBLE,
+  CONSTRAINT `FK_GBW_BW`
+    FOREIGN KEY (`rel_boss_weapon_id`)
+    REFERENCES `megamanx`.`rel_boss_weapon` (`rel_boss_weapon_id`),
+  CONSTRAINT `FK_GBW_G`
+    FOREIGN KEY (`game_id`)
+    REFERENCES `megamanx`.`game` (`game_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
 -- Table `megamanx`.`rel_game_player`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_player` (
@@ -175,6 +190,28 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_player` (
   CONSTRAINT `player_id2`
     FOREIGN KEY (`player_id`)
     REFERENCES `megamanx`.`player` (`player_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `megamanx`.`rel_player_weapon`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `megamanx`.`rel_player_weapon` (
+  `rel_player_weapon_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `player_id` INT(11) NOT NULL,
+  `weapon_id` INT(11) NOT NULL,
+  PRIMARY KEY (`rel_player_weapon_id`),
+  UNIQUE INDEX `rel_player_weapon_id_UNIQUE` (`rel_player_weapon_id` ASC) VISIBLE,
+  INDEX `FK_PW_P_idx` (`player_id` ASC) VISIBLE,
+  INDEX `FK_PW_W_idx` (`weapon_id` ASC) VISIBLE,
+  CONSTRAINT `FK_PW_P`
+    FOREIGN KEY (`player_id`)
+    REFERENCES `megamanx`.`player` (`player_id`),
+  CONSTRAINT `FK_PW_W`
+    FOREIGN KEY (`weapon_id`)
+    REFERENCES `megamanx`.`weapon` (`weapon_id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -236,13 +273,31 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Boss_By_ID`(
     DETERMINISTIC
 BEGIN
 	
-    SELECT boss.boss_id as id, b_name as 'name', 
-    description, hp, stage, boss.image, weapon_id as 'id_weapon',
-    w_name as 'weapon'
-    FROM boss
-    LEFT JOIN weapon 
-    ON boss.boss_id = weapon.boss_id
-    WHERE boss.boss_id = _boss_id;
+    -- Boss info
+    SELECT boss_id as id, b_name as 'name', 
+    description, image
+    WHERE boss_id = _boss_id;
+    
+    -- In-game boss info
+    SELECT g.game_id, g.title as 'game', gb.hp, 
+    s.stage_id, s.s_name as 'stage', 
+    w.weapon_id, w.w_name as 'weapon', w.image as 'weapon_image', 
+    wk.w_name as 'weakness_id', wk.w_name as 'weakness', wk.image as 'weakness_image'
+    FROM rel_game_boss gb
+    INNER JOIN game g
+    ON g.game_id = gb.game_id
+    INNER JOIN stage s
+    ON s.stage_id = gb.stage_id
+    INNER JOIN boss b
+    ON b.boss_id = gb.boss_id
+    INNER JOIN weapon w
+    ON b.boss_id = w.boss_id
+    INNER JOIN rel_boss_weapon bw
+    ON b.boss_id = bw.boss_id
+    INNER JOIN weapon wk
+    ON wk.weapon_id = bw.weapon_id
+    WHERE b.boss_id = _boss_id
+    AND wk.weakness = 1;
     
 END$$
 
@@ -312,8 +367,6 @@ USE `megamanx`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Boss_By_Game`(
 	IN _b_name VARCHAR(45),
     IN _description TEXT,
-    IN _hp INT,
-    IN _stage VARCHAR(45),
     IN _image VARCHAR(45),
     IN _game_id INT
 )
@@ -324,15 +377,11 @@ BEGIN
 	INSERT INTO boss
     (b_name,
     description,
-    hp,
-    stage,
     image
     ) 
     VALUES 
 	(_b_name,
     _description,
-    _hp,
-    _stage,
     _image
     );
     
