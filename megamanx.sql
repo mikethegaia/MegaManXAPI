@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_boss_weapon` (
   `rel_boss_weapon_id` INT(11) NOT NULL AUTO_INCREMENT,
   `boss_id` INT(11) NOT NULL,
   `weapon_id` INT(11) NOT NULL,
+  `game_id` INT(11) NOT NULL,
   `base_damage` INT(11) NOT NULL,
   `charged_damage` INT(11) NULL DEFAULT NULL,
   `weakness` BIT(1) NOT NULL,
@@ -98,6 +99,10 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_boss_weapon` (
   UNIQUE INDEX `rel_boss_weapon_id_UNIQUE` (`rel_boss_weapon_id` ASC) VISIBLE,
   INDEX `weapon_id_idx` (`weapon_id` ASC) VISIBLE,
   INDEX `boss_id_idx` (`boss_id` ASC) VISIBLE,
+  INDEX `FK_BW_G_idx` (`game_id` ASC) VISIBLE,
+  CONSTRAINT `FK_BW_G`
+    FOREIGN KEY (`game_id`)
+    REFERENCES `megamanx`.`game` (`game_id`),
   CONSTRAINT `boss_id3`
     FOREIGN KEY (`boss_id`)
     REFERENCES `megamanx`.`boss` (`boss_id`),
@@ -145,28 +150,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_boss` (
     FOREIGN KEY (`boss_id`)
     REFERENCES `megamanx`.`boss` (`boss_id`),
   CONSTRAINT `game_id2`
-    FOREIGN KEY (`game_id`)
-    REFERENCES `megamanx`.`game` (`game_id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
--- Table `megamanx`.`rel_game_boss_weapon`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_boss_weapon` (
-  `rel_game_boss_weapon_id` INT(11) NOT NULL AUTO_INCREMENT,
-  `game_id` INT(11) NOT NULL,
-  `rel_boss_weapon_id` INT(11) NOT NULL,
-  PRIMARY KEY (`rel_game_boss_weapon_id`),
-  UNIQUE INDEX `rel_game_boss_weapon_id_UNIQUE` (`rel_game_boss_weapon_id` ASC) VISIBLE,
-  INDEX `FK_GBW_G_idx` (`game_id` ASC) VISIBLE,
-  INDEX `FK_GBW_BW_idx` (`rel_boss_weapon_id` ASC) VISIBLE,
-  CONSTRAINT `FK_GBW_BW`
-    FOREIGN KEY (`rel_boss_weapon_id`)
-    REFERENCES `megamanx`.`rel_boss_weapon` (`rel_boss_weapon_id`),
-  CONSTRAINT `FK_GBW_G`
     FOREIGN KEY (`game_id`)
     REFERENCES `megamanx`.`game` (`game_id`))
 ENGINE = InnoDB
@@ -352,6 +335,7 @@ BEGIN
     INNER JOIN rel_game_boss gb
     ON b.boss_id = gb.boss_id
     WHERE gb.game_id = _game_id
+    AND bw.game_id = _game_id
     AND bw.weakness = 1;
 
 END$$
