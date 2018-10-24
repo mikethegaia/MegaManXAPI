@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`boss` (
   PRIMARY KEY (`boss_id`),
   UNIQUE INDEX `boss_id_UNIQUE` (`boss_id` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 4
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -46,7 +45,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`game` (
   PRIMARY KEY (`game_id`),
   UNIQUE INDEX `game_id_UNIQUE` (`game_id` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -155,7 +153,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_boss` (
     FOREIGN KEY (`game_id`)
     REFERENCES `megamanx`.`game` (`game_id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
