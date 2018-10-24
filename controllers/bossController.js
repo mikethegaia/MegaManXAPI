@@ -8,12 +8,11 @@ const upload = require('../utils/upload');
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
 const media = path.join(__dirname, '../media');
-const media_boss = path.join(media, '/bosses');
 
 //Rules: creation of the last path and the file's name
 const ruleLastDir = function(req)
 {
-    return path.join(media_boss, '/' + req.body.game_id);
+    return path.join(media, '/bosses');
 }
 const ruleName = function(req)
 {
@@ -41,9 +40,9 @@ exports.getBossByID = function (req, res)
 };
 
 //Insert boss
-exports.insertBossByGame = function (req, res)
+exports.insertBoss = function (req, res)
 {
-    upload([media, media_boss], ruleLastDir, ruleName, allowedTypes, 'image', req, res)
+    upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res)
     .then( function () 
     {
         if(req.imageError){
@@ -51,8 +50,8 @@ exports.insertBossByGame = function (req, res)
         }
         return Promise.using(getConnection(), function(connection)
         {
-            let sqlQuery = 'CALL Q_Insert_Boss_By_Game(?,?,?,?,?)';
-            let sqlData = [req.body.name, req.body.description, req.body.hp, req.file.filename, req.body.game_id];
+            let sqlQuery = 'CALL Q_Insert_Boss(?,?,?)';
+            let sqlData = [req.body.name, req.body.description, req.file.filename];
             return connection.query(sqlQuery, sqlData);
         });
     })

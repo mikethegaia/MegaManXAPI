@@ -344,17 +344,15 @@ END$$
 DELIMITER ;
 
 -- -----------------------------------------------------
--- procedure Q_Insert_Boss_By_Game
+-- procedure Q_Insert_Boss
 -- -----------------------------------------------------
 
 DELIMITER $$
 USE `megamanx`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Boss_By_Game`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Boss`(
 	IN _b_name VARCHAR(45),
     IN _description TEXT,
-    IN _hp INT,
-    IN _image VARCHAR(45),
-    IN _game_id INT
+    IN _image VARCHAR(45)
 )
 BEGIN
 
@@ -371,21 +369,7 @@ BEGIN
     _image
     );
     
-    SET _inserted_boss_id = LAST_INSERT_ID();
-    
-    INSERT INTO rel_game_boss
-    (
-	game_id,
-    boss_id,
-    hp
-    ) VALUES
-    (
-    _game_id,
-    _inserted_boss_id,
-    _hp
-    );
-    
-    SELECT _inserted_boss_id as id;
+    SELECT LAST_INSERT_ID() as id;
     
 END$$
 
