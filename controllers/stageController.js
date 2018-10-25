@@ -2,7 +2,7 @@
 const Promise = require('bluebird');
 const path = require('path');
 const fs = require('fs');
-const getConnection = require('../utils/dbconnection');
+const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
 
 //File types allowed and storage paths
@@ -29,12 +29,7 @@ exports.insertStage = function (req, res)
         if(req.imageError){
             return Promise.reject(req.imageError);
         }
-        return Promise.using(getConnection(), function(connection)
-        {
-            let sqlQuery = 'CALL Q_Insert_Stage(?,?,?)';
-            let sqlData = [req.body.name, req.body.description, req.file.filename];
-            return connection.query(sqlQuery, sqlData);
-        });
+        return dbconnection.query('CALL Q_Insert_Stage(?,?,?)', [req.body.name, req.body.description, req.file.filename]);
     })
     .then( function(rows)
     {

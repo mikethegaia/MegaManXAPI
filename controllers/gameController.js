@@ -2,7 +2,7 @@
 const Promise = require('bluebird');
 const path = require('path');
 const fs = require('fs');
-const getConnection = require('../utils/dbconnection');
+const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
 
 //File types allowed and storage paths
@@ -22,11 +22,8 @@ const ruleName = function(req)
 //Game by id
 exports.getGameByID = function (req, res)
 {
-    Promise.using(getConnection(), function(connection){
-        let sqlQuery = 'CALL Q_Get_Game_By_ID(?)';
-        let sqlData = [req.params.id];
-        return connection.query(sqlQuery, sqlData);
-    }).then( function (rows)
+    dbconnection.query('CALL Q_Get_Game_By_ID(?)', [req.params.id])
+    .then( function (rows)
     {
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  // Game
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  // Characters
@@ -55,12 +52,7 @@ exports.insertGame = function (req, res)
         if(req.imageError){
             return Promise.reject(req.imageError);
         }
-        return Promise.using(getConnection(), function(connection)
-        {
-            let sqlQuery = 'CALL Q_Insert_Game(?,?,?,?,?)';
-            let sqlData = [req.body.title, req.body.release_date, req.body.story,req.body.platforms, req.file.filename];
-            return connection.query(sqlQuery, sqlData);
-        });
+        return dbconnection.query('CALL Q_Insert_Game(?,?,?,?,?)', [req.body.title, req.body.release_date, req.body.story,req.body.platforms, req.file.filename]);
     })
     .then( function(rows)
     {

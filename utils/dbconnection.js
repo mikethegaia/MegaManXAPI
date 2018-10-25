@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const mysql = require('promise-mysql');
 
 const pool = mysql.createPool({
@@ -14,4 +15,12 @@ function getConnection(){
     });
 }
 
-module.exports = getConnection;
+function query(sqlQuery, sqlData){
+    return Promise.using(getConnection(), function(connection)
+    {
+        return connection.query(sqlQuery, sqlData);
+    });
+}
+
+exports.getConnection = getConnection;
+exports.query = query;

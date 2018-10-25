@@ -2,7 +2,7 @@
 const Promise = require('bluebird');
 const path = require('path');
 const fs = require('fs');
-const getConnection = require('../utils/dbconnection');
+const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
 
 //File types allowed and storage paths

@@ -2,7 +2,7 @@
 const Promise = require('bluebird');
 const path = require('path');
 const fs = require('fs');
-const getConnection = require('../utils/dbconnection');
+const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
 
 //File types allowed and storage paths
@@ -24,13 +24,7 @@ exports.getBossByID = async function (req, res)
 {
     try 
     {
-        let db = Promise.using(getConnection(), function(connection)
-        {
-            let sqlQuery = 'CALL Q_Get_Boss_By_ID(?)';
-            let sqlData = [req.params.id];
-            return connection.query(sqlQuery, sqlData);
-        });
-
+        let db = dbconnection.query('CALL Q_Get_Boss_By_ID(?)', [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         rows[0][0].infoPerGame = JSON.parse(JSON.stringify(rows[1]));
@@ -49,13 +43,7 @@ exports.insertBoss = async function (req, res)
     {
         await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
-        let db = Promise.using(getConnection(), function(connection)
-        {
-            let sqlQuery = 'CALL Q_Insert_Boss(?,?,?)';
-            let sqlData = [req.body.name, req.body.description, req.file.filename];
-            return connection.query(sqlQuery, sqlData);
-        });
-
+        let db = dbconnection.query('CALL Q_Insert_Boss(?,?,?)', [req.body.name, req.body.description, req.file.filename]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         res.status(201).send({message: 'Success', errors : null, data : rows[0][0]});
@@ -77,13 +65,7 @@ exports.insertInGameData = async function (req, res)
 {
     try
     {
-        let db = Promise.using(getConnection(), function(connection)
-        {
-            let sqlQuery = 'CALL Q_Insert_Game_Boss(?,?,?,?)';
-            let sqlData = [req.params.game_id, req.params.boss_id, req.body.hp, req.body.stage_id];
-            return connection.query(sqlQuery, sqlData);
-        });
-
+        let db = dbconnection.query('CALL Q_Insert_Game_Boss(?,?,?,?)', [req.params.game_id, req.params.boss_id, req.body.hp, req.body.stage_id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         if (rows[0][0].id <= 0)

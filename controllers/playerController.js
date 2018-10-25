@@ -2,7 +2,7 @@
 const Promise = require('bluebird');
 const path = require('path');
 const fs = require('fs');
-const getConnection = require('../utils/dbconnection');
+const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
 
 //File types allowed and storage paths
@@ -30,12 +30,7 @@ exports.insertPlayerByGames = function (req, res)
         if(req.imageError){
             return Promise.reject(req.imageError);
         }
-        return Promise.using(getConnection(), function(connection)
-        {
-            let sqlQuery = 'CALL Q_Insert_Player(?,?,?,?)';
-            let sqlData = [req.body.name, req.body.description, req.body.gender, req.file.filename];
-            return connection.query(sqlQuery, sqlData);
-        });
+        return dbconnection.query('CALL Q_Insert_Player(?,?,?,?)', [req.body.name, req.body.description, req.body.gender, req.file.filename]);
     })
     .then( function(rows)
     {
@@ -45,12 +40,7 @@ exports.insertPlayerByGames = function (req, res)
         let games = req.params.game_ids.split(',');
         return Promise.map(games, function(game)
         {
-            return Promise.using(getConnection(), function(connection)
-            {
-                let sqlQuery = 'CALL Q_Insert_Game_Player(?,?)';
-                let sqlData = [game, player_id];
-                return connection.query(sqlQuery, sqlData);
-            })
+            return dbconnection.query('CALL Q_Insert_Game_Player(?,?)', [game, player_id])
             .then( function(rows)
             {
                 rows[0] = JSON.parse(JSON.stringify(rows[0]));
@@ -78,12 +68,7 @@ exports.insertPlayerByGames = function (req, res)
             if (err.type == 'NO_SUCH_ELEMENTS')
             {
                 status = 404;
-                Promise.using(getConnection(), function(connection)
-                {
-                    let sqlQuery = 'DELETE FROM player WHERE player_id = ?';
-                    let sqlData = [player_id];
-                    return connection.query(sqlQuery, sqlData);
-                })
+                dbconnection.query('DELETE FROM player WHERE player_id = ?', [player_id])
             }
             res.status(status).send({message: 'Error in DB', errors : err, data : null});
         }
