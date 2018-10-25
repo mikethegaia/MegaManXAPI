@@ -102,13 +102,16 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_boss_weapon` (
   INDEX `FK_BW_G_idx` (`game_id` ASC) VISIBLE,
   CONSTRAINT `FK_BW_G`
     FOREIGN KEY (`game_id`)
-    REFERENCES `megamanx`.`game` (`game_id`),
+    REFERENCES `megamanx`.`game` (`game_id`)
+    ON DELETE CASCADE,
   CONSTRAINT `boss_id3`
     FOREIGN KEY (`boss_id`)
-    REFERENCES `megamanx`.`boss` (`boss_id`),
+    REFERENCES `megamanx`.`boss` (`boss_id`)
+    ON DELETE CASCADE,
   CONSTRAINT `weapon_id2`
     FOREIGN KEY (`weapon_id`)
-    REFERENCES `megamanx`.`weapon` (`weapon_id`))
+    REFERENCES `megamanx`.`weapon` (`weapon_id`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -145,13 +148,16 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_boss` (
   INDEX `FK_RGB_Stage_idx` (`stage_id` ASC) VISIBLE,
   CONSTRAINT `FK_RGB_Stage`
     FOREIGN KEY (`stage_id`)
-    REFERENCES `megamanx`.`stage` (`stage_id`),
+    REFERENCES `megamanx`.`stage` (`stage_id`)
+    ON DELETE CASCADE,
   CONSTRAINT `boss_id2`
     FOREIGN KEY (`boss_id`)
-    REFERENCES `megamanx`.`boss` (`boss_id`),
+    REFERENCES `megamanx`.`boss` (`boss_id`)
+    ON DELETE CASCADE,
   CONSTRAINT `game_id2`
     FOREIGN KEY (`game_id`)
-    REFERENCES `megamanx`.`game` (`game_id`))
+    REFERENCES `megamanx`.`game` (`game_id`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -169,10 +175,12 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_game_player` (
   INDEX `character_id_idx` (`player_id` ASC) VISIBLE,
   CONSTRAINT `game_id`
     FOREIGN KEY (`game_id`)
-    REFERENCES `megamanx`.`game` (`game_id`),
+    REFERENCES `megamanx`.`game` (`game_id`)
+    ON DELETE CASCADE,
   CONSTRAINT `player_id2`
     FOREIGN KEY (`player_id`)
-    REFERENCES `megamanx`.`player` (`player_id`))
+    REFERENCES `megamanx`.`player` (`player_id`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -191,10 +199,12 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_player_weapon` (
   INDEX `FK_PW_W_idx` (`weapon_id` ASC) VISIBLE,
   CONSTRAINT `FK_PW_P`
     FOREIGN KEY (`player_id`)
-    REFERENCES `megamanx`.`player` (`player_id`),
+    REFERENCES `megamanx`.`player` (`player_id`)
+    ON DELETE CASCADE,
   CONSTRAINT `FK_PW_W`
     FOREIGN KEY (`weapon_id`)
-    REFERENCES `megamanx`.`weapon` (`weapon_id`))
+    REFERENCES `megamanx`.`weapon` (`weapon_id`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
