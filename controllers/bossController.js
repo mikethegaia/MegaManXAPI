@@ -20,47 +20,47 @@ const ruleName = function(req)
 }
 
 //Boss by id
-exports.getBossByID = function (req, res)
+exports.getBossByID = async function (req, res)
 {
-    Promise.using(getConnection(), function(connection)
+    try 
     {
-        let sqlQuery = 'CALL Q_Get_Boss_By_ID(?)';
-        let sqlData = [req.params.id];
-        return connection.query(sqlQuery, sqlData);
-    }).then( function (rows)
-    {
+        let db = Promise.using(getConnection(), function(connection)
+        {
+            let sqlQuery = 'CALL Q_Get_Boss_By_ID(?)';
+            let sqlData = [req.params.id];
+            return connection.query(sqlQuery, sqlData);
+        });
+
+        let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         rows[0][0].infoPerGame = JSON.parse(JSON.stringify(rows[1]));
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
-    }).catch( function (err)
+    } catch (err)
     {
         console.log(err);
         res.status(500).send({message: 'Error in DB', errors : err, data : null});
-    });
+    }
 };
 
 //Insert boss
-exports.insertBoss = function (req, res)
+exports.insertBoss = async function (req, res)
 {
-    upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res)
-    .then( function () 
+    try 
     {
-        if(req.imageError){
-            return Promise.reject(req.imageError);
-        }
-        return Promise.using(getConnection(), function(connection)
+        await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
+        if (req.imageError) throw req.imageError;
+        let db = Promise.using(getConnection(), function(connection)
         {
             let sqlQuery = 'CALL Q_Insert_Boss(?,?,?)';
             let sqlData = [req.body.name, req.body.description, req.file.filename];
             return connection.query(sqlQuery, sqlData);
         });
-    })
-    .then( function(rows)
-    {
+
+        let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         res.status(201).send({message: 'Success', errors : null, data : rows[0][0]});
-    })
-    .catch( function(err){
+    } catch (err)
+    {
         console.log(err);
         if(err.type == 'FILETYPE_NOT_ALLOWED') res.status(415).send({ message: req.imageError.message, errors: req.imageError, data: null });
         else {
@@ -68,29 +68,32 @@ exports.insertBoss = function (req, res)
                 console.log(err);
             });
             res.status(500).send({message: 'Error in DB', errors : err, data : null});
-        }
-    });
-}
+        }   
+    }
+};
 
 //Insert boss in-game data
-exports.insertInGameData = function (req, res)
+exports.insertInGameData = async function (req, res)
 {
-    Promise.using(getConnection(), function(connection)
+    try
     {
-        let sqlQuery = 'CALL Q_Insert_Game_Boss(?,?,?,?)';
-        let sqlData = [req.params.game_id, req.params.boss_id, req.body.hp, req.body.stage_id];
-        return connection.query(sqlQuery, sqlData);
-    }).then( function (rows)
-    {
+        let db = Promise.using(getConnection(), function(connection)
+        {
+            let sqlQuery = 'CALL Q_Insert_Game_Boss(?,?,?,?)';
+            let sqlData = [req.params.game_id, req.params.boss_id, req.body.hp, req.body.stage_id];
+            return connection.query(sqlQuery, sqlData);
+        });
+
+        let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         if (rows[0][0].id <= 0)
         {
-            return Promise.reject({type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message});
+            throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
         }
         res.status(201).send({message: rows[0][0].message, errors : null, data : rows[0][0]});
-    }).catch( function (err)
+    } catch (err)
     {
         console.log(err);
         res.status(500).send({message: 'Error in DB', errors : err, data : null});
-    });
-}
+    }
+};
