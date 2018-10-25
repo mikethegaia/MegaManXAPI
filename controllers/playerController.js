@@ -20,44 +20,37 @@ const ruleName = function(req)
 }
 
 //Insert player by games
-exports.insertPlayerByGames = function (req, res)
+exports.insertPlayerByGames = async function (req, res)
 {
-    let data = [];
+    let data = []
     let player_id;
-    upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res)
-    .then( function()
+    let games = req.params.game_ids.split(',');
+    try 
     {
-        if(req.imageError){
-            return Promise.reject(req.imageError);
-        }
-        return dbconnection.query('CALL Q_Insert_Player(?,?,?,?)', [req.body.name, req.body.description, req.body.gender, req.file.filename]);
-    })
-    .then( function(rows)
-    {
+        await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
+        if (req.imageError) throw req.imageError;
+        let db = dbconnection.query('CALL Q_Insert_Player(?,?,?,?)', [req.body.name, req.body.description, req.body.gender, req.file.filename]);
+        let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         data.push(rows[0][0]);
         player_id = rows[0][0].id;
-        let games = req.params.game_ids.split(',');
-        return Promise.map(games, function(game)
+
+        await Promise.map(games, function(game)
         {
             return dbconnection.query('CALL Q_Insert_Game_Player(?,?)', [game, player_id])
             .then( function(rows)
             {
                 rows[0] = JSON.parse(JSON.stringify(rows[0]));
-                if (rows[0][0].id <= 0)
-                {
-                    return Promise.reject({type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message, game: parseInt(game)});
-                }
+                if (rows[0][0].id <= 0) return Promise.reject({type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message, game: parseInt(game)});
                 rows[0][0].game_id = parseInt(game);
                 data.push(rows[0][0]);
             });
         });
-    })
-    .then(function ()
-    {
+
         res.status(201).send({message: data[0].message, errors : null, data : data});
-    })
-    .catch( function(err){
+
+    } catch (err)
+    {
         let status = 500;
         console.log(err);
         if(err.type == 'FILETYPE_NOT_ALLOWED') res.status(415).send({ message: req.imageError.message, errors: req.imageError, data: null });
@@ -72,5 +65,5 @@ exports.insertPlayerByGames = function (req, res)
             }
             res.status(status).send({message: 'Error in DB', errors : err, data : null});
         }
-    });
+    }
 }
