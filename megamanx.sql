@@ -566,6 +566,56 @@ END$$
 
 DELIMITER ;
 
+-- -----------------------------------------------------
+-- procedure Q_Insert_Weapon
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Weapon`(
+	IN _w_name VARCHAR(45),
+    IN _image VARCHAR(45),
+    IN _boss_id INT
+)
+BEGIN
+	
+    DECLARE _count_boss INT;
+	SET _count_boss = (SELECT COUNT(*) FROM boss WHERE boss_id = _boss_id);
+    
+    IF _boss_id = 0 THEN
+        INSERT INTO weapon
+        (w_name,
+        image
+        )
+        VALUES
+        (_w_name,
+        _image
+        );
+        
+        SELECT LAST_INSERT_ID() as id, 'Success' as message;
+    ELSE
+		IF _count_boss = 0 THEN
+			SELECT _count_boss as id, 'There is no such boss.' as message;
+		ELSE
+			INSERT INTO weapon
+			(w_name,
+			image,
+            boss_id
+			)
+			VALUES
+			(_w_name,
+			_image,
+            _boss_id
+			);
+        
+			SELECT LAST_INSERT_ID() as id, 'Success' as message;
+        END IF;
+    END IF;
+    
+END$$
+
+DELIMITER ;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

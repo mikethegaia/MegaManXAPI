@@ -8,30 +8,41 @@ const upload = require('../utils/upload');
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
 const media = path.join(__dirname, '../media');
-const media_weapons = path.join(media, '/weapons');
 
 //Rules: creation of the last path and the file's name
 const ruleLastDir = function(req)
 {
-    return path.join(media_weapons, '/' + req.body.game_id);
+    return path.join(media, '/weapons');
 }
 const ruleName = function(req)
 {
     return req.body.name.replace(/\s/g, '');
 }
 
-//Insert weapon
-/*exports.insertWeaponByGameOwnerWeakness = function (req, res)
+//Insert weapon (by boss)
+exports.insertWeapon = async function (req, res)
 {
-    upload([media, media_weapons], ruleLastDir, ruleName, allowedTypes, 'image', req, res)
-    .then( function()
+    let boss_id;
+    try
     {
-        if(req.imageError){
-            return Promise.reject(req.imageError);
-        }
-        return Promise.using(getConnection(), function(connection)
-        {
-
-        });
-    });
-}*/
+        await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
+        if (req.imageError) throw req.imageError;
+        if (req.params.boss_id) boss_id = req.params.boss_id;
+        else boss_id = 0;
+        let db = dbconnection.query('CALL Q_Insert_Weapon(?,?,?)', [req.body.name, req.file.filename, boss_id]);
+        let rows = await db;
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));
+        if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
+        res.status(201).send({message: 'Success', errors : null, data : rows[0][0]});
+    } catch (err)
+    {
+        console.log(err);
+        if(err.type == 'FILETYPE_NOT_ALLOWED') res.status(415).send({ message: req.imageError.message, errors: req.imageError, data: null });
+        else {
+            fs.unlink(req.file.path, function(err){
+                console.log(err);
+            });
+            res.status(500).send({message: 'Error in DB', errors : err, data : null});
+        } 
+    }
+}
