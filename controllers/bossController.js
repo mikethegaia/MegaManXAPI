@@ -68,10 +68,7 @@ exports.insertInGameData = async function (req, res)
         let db = dbconnection.query('CALL Q_Insert_Game_Boss(?,?,?,?)', [req.params.game_id, req.params.boss_id, req.body.hp, req.body.stage_id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
-        if (rows[0][0].id <= 0)
-        {
-            throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
-        }
+        if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
         res.status(201).send({message: rows[0][0].message, errors : null, data : rows[0][0]});
     } catch (err)
     {
