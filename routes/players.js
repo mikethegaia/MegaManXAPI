@@ -4,6 +4,6 @@ const router = express.Router();
 const playerController = require('../controllers/playerController');
 
 //Insert players by games
-router.post('/:game_ids', playerController.insertPlayerByGames);
+router.route('/:game_ids').post(playerController.insertPlayerByGames);
 
 module.exports = router;

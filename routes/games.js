@@ -4,9 +4,9 @@ const router = express.Router();
 const gameController = require('../controllers/gameController');
 
 //Game by id
-router.get('/:id', gameController.getGameByID)
+router.route('/:id').get(gameController.getGameByID)
 
 //Insert game
-router.post('/', gameController.insertGame);
+router.route('/').post(gameController.insertGame);
 
 module.exports = router;

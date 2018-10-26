@@ -7,6 +7,6 @@ const stageController = require('../controllers/stageController');
 //router.get('/:id', gameController.getGameByID)
 
 //Insert stage
-router.post('/', stageController.insertStage);
+router.route('/').post(stageController.insertStage);
 
 module.exports = router;

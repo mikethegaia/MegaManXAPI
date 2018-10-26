@@ -4,9 +4,9 @@ const router = express.Router();
 const weaponController = require('../controllers/weaponController');
 
 //Insert weapon
-router.post('/', weaponController.insertWeapon);
+router.route('/').post(weaponController.insertWeapon);
 
 //Insert weapon by boss
-router.post('/:boss_id', weaponController.insertWeapon);
+router.route('/:boss_id').post(weaponController.insertWeapon);
 
 module.exports = router;
