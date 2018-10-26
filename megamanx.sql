@@ -585,11 +585,13 @@ BEGIN
     IF _boss_id = 0 THEN
         INSERT INTO weapon
         (w_name,
-        image
+        image,
+        boss_id
         )
         VALUES
         (_w_name,
-        _image
+        _image,
+        NULL
         );
         
         SELECT LAST_INSERT_ID() as id, 'Success' as message;
