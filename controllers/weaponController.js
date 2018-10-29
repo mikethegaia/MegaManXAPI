@@ -45,4 +45,24 @@ exports.insertWeapon = async function (req, res)
             res.status(500).send({message: 'Error in DB', errors : err, data : null});
         } 
     }
-}
+};
+
+exports.insertDamageValues = async function (req, res)
+{
+    let charged_damage;
+    try
+    {
+        if (req.body.charged_damage) charged_damage = req.body.charged_damage;
+        else charged_damage = 0;
+        let db = dbconnection.query('CALL Q_Insert_Boss_Weapon(?,?,?,?,?,?)', [req.params.boss_id, req.params.weapon_id, req.params.game_id, 
+            req.body.base_damage, charged_damage, req.body.weakness]);
+        let rows = await db;
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));
+        if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
+        res.status(201).send({message: rows[0][0].message, errors : null, data : rows[0][0]});
+    } catch (err)
+    {
+        console.log(err);
+        res.status(500).send({message: 'Error in DB', errors : err, data : null});
+    }
+};

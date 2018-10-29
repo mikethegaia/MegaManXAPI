@@ -384,6 +384,80 @@ END$$
 DELIMITER ;
 
 -- -----------------------------------------------------
+-- procedure Q_Insert_Boss_Weapon
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Boss_Weapon`(
+	IN _boss_id INT,
+    IN _weapon_id INT,
+    IN _game_id INT,
+    IN _base_damage INT,
+    IN _charged_damage INT,
+    IN _weakness INT
+)
+BEGIN
+	
+    DECLARE _count_boss INT;
+    DECLARE _count_weapon INT;
+	DECLARE _count_game INT;
+    
+    SET _count_boss = (SELECT COUNT(*) FROM boss WHERE boss_id = _boss_id);
+    SET _count_weapon = (SELECT COUNT(*) FROM weapon WHERE weapon_id = _weapon_id);
+	SET _count_game = (SELECT COUNT(*) FROM game WHERE game_id = _game_id);
+    
+	IF _count_boss = 0 THEN
+		SELECT _count_boss as id, 'There is no such boss.' as message;
+	ELSEIF _count_weapon = 0 THEN
+		SELECT _count_weapon as id, 'There is no such weapon.' as message;
+	ELSEIF _count_game = 0 THEN
+		SELECT _count_game as id, 'There is no such game.' as message;
+	ELSE
+		IF _charged_damage = 0 THEN
+			INSERT INTO rel_boss_weapon
+            (boss_id,
+			weapon_id,
+			game_id,
+			base_damage,
+			weakness
+            )
+            VALUES
+            (_boss_id,
+			_weapon_id,
+			_game_id,
+			_base_damage,
+			_weakness
+            );
+            
+            SELECT LAST_INSERT_ID() as id, 'Success' as message;
+        ELSE
+			INSERT INTO rel_boss_weapon
+            (boss_id,
+			weapon_id,
+			game_id,
+			base_damage,
+			charged_damage,
+			weakness
+            )
+            VALUES
+            (_boss_id,
+			_weapon_id,
+			_game_id,
+			_base_damage,
+			_charged_damage,
+			_weakness
+            );
+            
+            SELECT LAST_INSERT_ID() as id, 'Success' as message;
+        END IF;
+    END IF;
+    
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
 -- procedure Q_Insert_Game
 -- -----------------------------------------------------
 
