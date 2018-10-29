@@ -33,6 +33,23 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
+-- Table `megamanx`.`game`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `megamanx`.`game` (
+  `game_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(45) NOT NULL,
+  `release_date` DATETIME NOT NULL,
+  `story` TEXT NOT NULL,
+  `platforms` VARCHAR(255) NOT NULL,
+  `image` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`game_id`),
+  UNIQUE INDEX `game_id_UNIQUE` (`game_id` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
 -- Table `megamanx`.`stage`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `megamanx`.`stage` (
@@ -55,30 +72,18 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`collectible` (
   `c_name` VARCHAR(45) NOT NULL,
   `description` TEXT NOT NULL,
   `image` VARCHAR(45) NULL DEFAULT NULL,
+  `game_id` INT(11) NOT NULL,
   `stage_id` INT(11) NOT NULL,
   PRIMARY KEY (`collectible_id`),
   UNIQUE INDEX `collectible_id_UNIQUE` (`collectible_id` ASC) VISIBLE,
   INDEX `FK_Collectible_Stage_idx` (`stage_id` ASC) VISIBLE,
+  INDEX `FK_Collectible_Game_idx` (`game_id` ASC) VISIBLE,
+  CONSTRAINT `FK_Collectible_Game`
+    FOREIGN KEY (`game_id`)
+    REFERENCES `megamanx`.`game` (`game_id`),
   CONSTRAINT `FK_Collectible_Stage`
     FOREIGN KEY (`stage_id`)
     REFERENCES `megamanx`.`stage` (`stage_id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
--- Table `megamanx`.`game`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `megamanx`.`game` (
-  `game_id` INT(11) NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(45) NOT NULL,
-  `release_date` DATETIME NOT NULL,
-  `story` TEXT NOT NULL,
-  `platforms` VARCHAR(255) NOT NULL,
-  `image` VARCHAR(45) NULL DEFAULT NULL,
-  PRIMARY KEY (`game_id`),
-  UNIQUE INDEX `game_id_UNIQUE` (`game_id` ASC) VISIBLE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -479,28 +484,35 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Collectible`(
 	IN _c_name VARCHAR(45),
     IN _description TEXT,
     IN _image VARCHAR(45),
-    IN _stage_id INT
+    IN _stage_id INT,
+    IN _game_id INT
 )
 BEGIN
 
 	DECLARE _count_stage INT;
+    DECLARE _count_game INT;
     
     SET _count_stage = (SELECT COUNT(*) FROM stage WHERE stage_id = _stage_id);
+    SET _count_game = (SELECT COUNT(*) FROM game WHERE game_id = _game_id);
     
     IF _count_stage = 0 THEN
 		SELECT _count_stage as id, 'There is no such stage.' as message;
+	ELSEIF _count_game = 0 THEN
+		SELECT _count_game as id, 'There is no such game.' as message;
 	ELSE 
 		INSERT INTO collectible
         (c_name,
 		description,
 		image,
-		stage_id
+		stage_id,
+        game_id
         )
         VALUES
         (_c_name,
 		_description,
 		_image,
-		_stage_id
+		_stage_id,
+        _game_id
         );
         
         SELECT LAST_INSERT_ID() as id, 'Success' as message;

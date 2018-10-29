@@ -19,14 +19,14 @@ const ruleName = function(req)
     return req.body.name.replace(/\s/g, '');
 }
 
-//Insert collectible by stage
-exports.insertCollectibleByStage = async function (req, res)
+//Insert collectible by stage and game
+exports.insertCollectibleByStageGame = async function (req, res)
 {
     try
     {
         await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
-        let db = dbconnection.query('CALL Q_Insert_Collectible(?,?,?,?)', [req.body.name, req.body.description, req.file.filename, req.params.stage_id]);
+        let db = dbconnection.query('CALL Q_Insert_Collectible(?,?,?,?,?)', [req.body.name, req.body.description, req.file.filename, req.params.stage_id, req.params.game_id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
