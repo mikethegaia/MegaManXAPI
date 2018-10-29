@@ -611,6 +611,45 @@ END$$
 DELIMITER ;
 
 -- -----------------------------------------------------
+-- procedure Q_Insert_Player_Weapon
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Player_Weapon`(
+	IN _player_id INT,
+    IN _weapon_id INT
+)
+BEGIN
+	
+    DECLARE _count_player INT;
+    DECLARE _count_weapon INT;
+    
+    SET _count_player = (SELECT COUNT(*) FROM player WHERE player_id = _player_id);
+	SET _count_weapon = (SELECT COUNT(*) FROM weapon WHERE weapon_id = _weapon_id);
+    
+    IF _count_player = 0 THEN
+		SELECT _count_player as id, 'There is no such player.' as message;
+	ELSEIF _count_weapon = 0 THEN
+		SELECT _count_weapon as id, 'There is no such weapon.' as message;
+	ELSE
+		INSERT INTO rel_player_weapon
+        (player_id,
+		weapon_id
+        )
+        VALUES
+        (_player_id,
+		_weapon_id
+        );
+        
+        SELECT LAST_INSERT_ID() as id, 'Success' as message;
+    END IF;
+        
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
 -- procedure Q_Insert_Stage
 -- -----------------------------------------------------
 

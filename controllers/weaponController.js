@@ -47,6 +47,43 @@ exports.insertWeapon = async function (req, res)
     }
 };
 
+//Assign weapon to player(s)
+exports.assignWeaponPlayer = async function (req, res)
+{
+    let data = [];
+    let players = req.params.player_ids.split(',');
+    try
+    {
+        for (let i = 0; i<players.length; i++)
+        {
+            await dbconnection.query('CALL Q_Insert_Player_Weapon(?,?)', [players[i], req.params.weapon_id])
+            .then(function (rows)
+            {
+                rows[0] = JSON.parse(JSON.stringify(rows[0]));
+                if (rows[0][0].id <= 0) return Promise.reject({type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message, player: parseInt(players[i])});
+                rows[0][0].player_id = parseInt(players[i]);
+                data.push(rows[0][0]);   
+            });
+        }
+
+        res.status(201).send({message: data[0].message, errors : null, data : data});
+    } catch (err)
+    {
+        let status = 500;
+        console.log(err);
+        if (err.type == 'NO_SUCH_ELEMENTS')
+        {
+            console.log(data);
+            status = 404;
+            Promise.map(data, function(m)
+            {
+                dbconnection.query('DELETE FROM rel_player_weapon WHERE rel_player_weapon_id = ?', [m.id]);
+            });
+        }
+        res.status(status).send({message: 'Error in DB', errors : err, data : null});
+    }
+};
+
 //Insert damage values
 exports.insertDamageValues = async function (req, res)
 {
