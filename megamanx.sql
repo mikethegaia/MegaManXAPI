@@ -371,6 +371,66 @@ END$$
 DELIMITER ;
 
 -- -----------------------------------------------------
+-- procedure Q_Insert_Armor
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Armor`(
+	IN _x_name VARCHAR(45),
+    IN _head_id INT,
+    IN _body_id INT,
+    IN _arm_id INT,
+    IN _foot_id INT,
+    IN _image VARCHAR(45)
+)
+BEGIN
+
+	DECLARE _count_head INT;
+    DECLARE _count_body INT;
+    DECLARE _count_arm INT;
+    DECLARE _count_foot INT;
+    
+    
+    SET _count_head = (SELECT COUNT(*) FROM collectible WHERE collectible_id = _head_id);
+    SET _count_body = (SELECT COUNT(*) FROM collectible WHERE collectible_id = _body_id);
+    SET _count_arm = (SELECT COUNT(*) FROM collectible WHERE collectible_id = _arm_id);
+    SET _count_foot = (SELECT COUNT(*) FROM collectible WHERE collectible_id = _foot_id);
+    
+    IF _count_head = 0 THEN
+		SELECT _count_head as id, 'There is no such head collectible.' as message;
+	ELSEIF _count_body = 0 THEN
+		SELECT _count_body as id, 'There is no such body collectible.' as message;
+	ELSEIF _count_arm = 0 THEN
+		SELECT _count_arm as id, 'There is no such arm collectible.' as message;
+	ELSEIF _count_foot = 0 THEN
+		SELECT _count_foot as id, 'There is no such feet collectible.' as message;
+	ELSE 
+		INSERT INTO x_armor
+        (x_name,
+		head_id,
+		body_id,
+		arm_id,
+		foot_id,
+		image
+        )
+        VALUES
+        (_x_name,
+		_head_id,
+		_body_id,
+		_arm_id,
+		_foot_id,
+		_image
+        );
+        
+        SELECT LAST_INSERT_ID() as id, 'Success' as message;
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
 -- procedure Q_Insert_Boss
 -- -----------------------------------------------------
 
