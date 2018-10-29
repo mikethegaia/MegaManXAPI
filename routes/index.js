@@ -7,6 +7,7 @@ const stages = require('./stages');
 const games = require('./games');
 const players = require('./players');
 const weapons = require('./weapons');
+const collectibles = require('./collectibles');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -18,5 +19,6 @@ router.use('/stages', stages);
 router.use('/games', games);
 router.use('/players', players);
 router.use('/weapons', weapons);
+router.use('/collectibles', collectibles);
 
 module.exports = router;

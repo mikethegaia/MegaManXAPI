@@ -33,6 +33,41 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
+-- Table `megamanx`.`stage`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `megamanx`.`stage` (
+  `stage_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `s_name` VARCHAR(45) NOT NULL,
+  `description` TEXT NOT NULL,
+  `image` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`stage_id`),
+  UNIQUE INDEX `stage_id_UNIQUE` (`stage_id` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `megamanx`.`collectible`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `megamanx`.`collectible` (
+  `collectible_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `c_name` VARCHAR(45) NOT NULL,
+  `description` TEXT NOT NULL,
+  `image` VARCHAR(45) NULL DEFAULT NULL,
+  `stage_id` INT(11) NOT NULL,
+  PRIMARY KEY (`collectible_id`),
+  UNIQUE INDEX `collectible_id_UNIQUE` (`collectible_id` ASC) VISIBLE,
+  INDEX `FK_Collectible_Stage_idx` (`stage_id` ASC) VISIBLE,
+  CONSTRAINT `FK_Collectible_Stage`
+    FOREIGN KEY (`stage_id`)
+    REFERENCES `megamanx`.`stage` (`stage_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
 -- Table `megamanx`.`game`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `megamanx`.`game` (
@@ -112,21 +147,6 @@ CREATE TABLE IF NOT EXISTS `megamanx`.`rel_boss_weapon` (
     FOREIGN KEY (`weapon_id`)
     REFERENCES `megamanx`.`weapon` (`weapon_id`)
     ON DELETE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
--- Table `megamanx`.`stage`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `megamanx`.`stage` (
-  `stage_id` INT(11) NOT NULL AUTO_INCREMENT,
-  `s_name` VARCHAR(45) NOT NULL,
-  `description` TEXT NOT NULL,
-  `image` VARCHAR(45) NULL DEFAULT NULL,
-  PRIMARY KEY (`stage_id`),
-  UNIQUE INDEX `stage_id_UNIQUE` (`stage_id` ASC) VISIBLE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -216,37 +236,29 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `megamanx`.`x_armor` (
   `x_armor_id` INT(11) NOT NULL AUTO_INCREMENT,
   `x_name` VARCHAR(45) NOT NULL,
-  `head_effect` TEXT NOT NULL,
-  `head_stage` INT(11) NOT NULL,
-  `head_image` VARCHAR(45) NULL DEFAULT NULL,
-  `body_effect` TEXT NOT NULL,
-  `body_stage` INT(11) NOT NULL,
-  `body_image` VARCHAR(45) NULL DEFAULT NULL,
-  `arm_effect` TEXT NOT NULL,
-  `arm_stage` INT(11) NOT NULL,
-  `arm_image` VARCHAR(45) NULL DEFAULT NULL,
-  `foot_effect` TEXT NOT NULL,
-  `foot_stage` INT(11) NOT NULL,
-  `foot_image` VARCHAR(45) NULL DEFAULT NULL,
+  `head_id` INT(11) NOT NULL,
+  `body_id` INT(11) NOT NULL,
+  `arm_id` INT(11) NOT NULL,
+  `foot_id` INT(11) NOT NULL,
   `image` VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (`x_armor_id`),
   UNIQUE INDEX `x_armor_id_UNIQUE` (`x_armor_id` ASC) VISIBLE,
-  INDEX `FK_Head_Stage_idx` (`head_stage` ASC) VISIBLE,
-  INDEX `FK_Body_Stage_idx` (`body_stage` ASC) VISIBLE,
-  INDEX `FK_Arm_Stage_idx` (`arm_stage` ASC) VISIBLE,
-  INDEX `FK_Foot_Stage_idx` (`foot_stage` ASC) VISIBLE,
-  CONSTRAINT `FK_Arm_Stage`
-    FOREIGN KEY (`arm_stage`)
-    REFERENCES `megamanx`.`stage` (`stage_id`),
-  CONSTRAINT `FK_Body_Stage`
-    FOREIGN KEY (`body_stage`)
-    REFERENCES `megamanx`.`stage` (`stage_id`),
-  CONSTRAINT `FK_Foot_Stage`
-    FOREIGN KEY (`foot_stage`)
-    REFERENCES `megamanx`.`stage` (`stage_id`),
-  CONSTRAINT `FK_Head_Stage`
-    FOREIGN KEY (`head_stage`)
-    REFERENCES `megamanx`.`stage` (`stage_id`))
+  INDEX `FK_Arm_Collectible_idx` (`arm_id` ASC) VISIBLE,
+  INDEX `FK_Body_Collectible_idx` (`body_id` ASC) VISIBLE,
+  INDEX `FK_Foot_Collectible_idx` (`foot_id` ASC) VISIBLE,
+  INDEX `FK_Head_Collectible_idx` (`head_id` ASC) VISIBLE,
+  CONSTRAINT `FK_Arm_Collectible`
+    FOREIGN KEY (`arm_id`)
+    REFERENCES `megamanx`.`collectible` (`collectible_id`),
+  CONSTRAINT `FK_Body_Collectible`
+    FOREIGN KEY (`body_id`)
+    REFERENCES `megamanx`.`collectible` (`collectible_id`),
+  CONSTRAINT `FK_Foot_Collectible`
+    FOREIGN KEY (`foot_id`)
+    REFERENCES `megamanx`.`collectible` (`collectible_id`),
+  CONSTRAINT `FK_Head_Collectible`
+    FOREIGN KEY (`head_id`)
+    REFERENCES `megamanx`.`collectible` (`collectible_id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -453,6 +465,47 @@ BEGIN
         END IF;
     END IF;
     
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure Q_Insert_Collectible
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Insert_Collectible`(
+	IN _c_name VARCHAR(45),
+    IN _description TEXT,
+    IN _image VARCHAR(45),
+    IN _stage_id INT
+)
+BEGIN
+
+	DECLARE _count_stage INT;
+    
+    SET _count_stage = (SELECT COUNT(*) FROM stage WHERE stage_id = _stage_id);
+    
+    IF _count_stage = 0 THEN
+		SELECT _count_stage as id, 'There is no such stage.' as message;
+	ELSE 
+		INSERT INTO collectible
+        (c_name,
+		description,
+		image,
+		stage_id
+        )
+        VALUES
+        (_c_name,
+		_description,
+		_image,
+		_stage_id
+        );
+        
+        SELECT LAST_INSERT_ID() as id, 'Success' as message;
+    END IF;
+
 END$$
 
 DELIMITER ;
