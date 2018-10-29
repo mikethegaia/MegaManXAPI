@@ -47,6 +47,7 @@ exports.insertWeapon = async function (req, res)
     }
 };
 
+//Insert damage values
 exports.insertDamageValues = async function (req, res)
 {
     let charged_damage;
