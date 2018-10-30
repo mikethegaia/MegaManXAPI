@@ -27,11 +27,14 @@ exports.getBossByID = async function (req, res)
         let db = dbconnection.query('CALL Q_Get_Boss_By_ID(?)', [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
+        if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such boss'};
         rows[0][0].infoPerGame = JSON.parse(JSON.stringify(rows[1]));
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
     } catch (err)
     {
+        let status = 500;
         console.log(err);
+        if (err.type == 'NO_SUCH_ELEMENTS') status = 404; 
         res.status(500).send({message: 'Error in DB', errors : err, data : null});
     }
 };

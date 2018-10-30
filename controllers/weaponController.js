@@ -31,7 +31,7 @@ exports.getWeaponByID = async function (req, res)
         rows[2] = JSON.parse(JSON.stringify(rows[2]));  //Player
         rows[3] = JSON.parse(JSON.stringify(rows[3]));  //Boss
         rows[4] = JSON.parse(JSON.stringify(rows[4]));  //Damage Chart
-
+        if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such weapon'};
         rows[0][0].games = rows[1];
         rows[0][0].games.forEach( game => game.damageChart = [] );
         rows[0][0].players = rows[2];
@@ -39,13 +39,19 @@ exports.getWeaponByID = async function (req, res)
         rows[4].forEach( wk => {
             wk.weakness = wk.weakness.data[0];
             rows[0][0].games.forEach( game => {
-                if (wk.game_id === game.game_id) game.damageChart.push(wk);
+                if (wk.game_id === game.game_id) {
+                    wkSans = wk;
+                    delete wkSans.game_id;
+                    game.damageChart.push(wkSans);
+                }
             });
         });
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
     } catch (err)
     {
+        let status = 500;
         console.log(err);
+        if (err.type == 'NO_SUCH_ELEMENTS') status = 404; 
         res.status(500).send({message: 'Error in DB', errors : err, data : null});
     }
 };

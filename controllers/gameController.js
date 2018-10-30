@@ -30,6 +30,7 @@ exports.getGameByID = async function (req, res)
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  // Characters
         rows[2] = JSON.parse(JSON.stringify(rows[2]));  // Armor sets
         rows[3] = JSON.parse(JSON.stringify(rows[3]));  // Weakness chart
+        if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such game'};
         rows[0][0].platforms = JSON.parse(rows[0][0].platforms);
         rows[0][0].players = rows[1];
         //rows[0][0].armors = rows[2];
@@ -37,7 +38,9 @@ exports.getGameByID = async function (req, res)
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
     } catch (err) 
     {
+        let status = 500;
         console.log(err);
+        if (err.type == 'NO_SUCH_ELEMENTS') status = 404; 
         res.status(500).send({message: 'Error in DB', errors : err, data : null});
     }
 }

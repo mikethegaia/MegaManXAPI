@@ -29,12 +29,15 @@ exports.getPlayerByID = async function (req, res)
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Player
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Main Weapons
         rows[2] = JSON.parse(JSON.stringify(rows[2]));  //Games
+        if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such player'};
         rows[0][0].mainWeapons = JSON.parse(JSON.stringify(rows[1]));
         rows[0][0].games = JSON.parse(JSON.stringify(rows[2]));
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
     } catch (err)
     {
+        let status = 500;
         console.log(err);
+        if (err.type == 'NO_SUCH_ELEMENTS') status = 404; 
         res.status(500).send({message: 'Error in DB', errors : err, data : null});
     }
 };

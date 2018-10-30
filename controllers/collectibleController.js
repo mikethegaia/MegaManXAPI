@@ -36,6 +36,7 @@ exports.getArmorByID = async function (req, res)
         rows[3] = JSON.parse(JSON.stringify(rows[3]));  //Body
         rows[4] = JSON.parse(JSON.stringify(rows[4]));  //Arm
         rows[5] = JSON.parse(JSON.stringify(rows[5]));  //Foot
+        if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such armor'};
         rows[0][0].games = JSON.parse(JSON.stringify(rows[1]));
         rows[0][0].head = JSON.parse(JSON.stringify(rows[2]));
         rows[0][0].body = JSON.parse(JSON.stringify(rows[3]));
@@ -44,7 +45,9 @@ exports.getArmorByID = async function (req, res)
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
     } catch (err)
     {
+        let status = 500;
         console.log(err);
+        if (err.type == 'NO_SUCH_ELEMENTS') status = 404; 
         res.status(500).send({message: 'Error in DB', errors : err, data : null});
     }
 };
