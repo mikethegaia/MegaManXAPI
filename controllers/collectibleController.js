@@ -23,6 +23,25 @@ const ruleName = function(req)
     return req.body.name.replace(/\s/g, '');
 }
 
+//Get collectible by Id
+exports.getCollectibleByID = async function (req, res)
+{
+    try
+    {
+        let db = dbconnection.query('CALL Q_Get_Collectible_By_ID(?)', [req.params.id]);
+        let rows = await db;
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Collectible
+        if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such collectible'};
+        res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
+    } catch (err)
+    {
+        let status = 500;
+        console.log(err);
+        if (err.type == 'NO_SUCH_ELEMENTS') status = 404; 
+        res.status(status).send({message: 'Error in DB', errors : err, data : null});
+    }
+};
+
 //Get armor by ID
 exports.getArmorByID = async function (req, res)
 {

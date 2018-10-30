@@ -394,6 +394,32 @@ END$$
 DELIMITER ;
 
 -- -----------------------------------------------------
+-- procedure Q_Get_Collectible_By_ID
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Collectible_By_ID`(
+	IN _collectible_id INT
+)
+BEGIN
+
+	-- Collectible details
+    SELECT c.collectible_id as id, c.c_name as 'name', c.description, c.image,
+    g.game_id, g.title as game, g.image as 'g_image',
+    s.stage_id, s.s_name as stage, s.image as 's_image'
+    FROM collectible c
+    INNER JOIN game g
+    ON g.game_id = c.game_id
+    INNER JOIN stage s
+    ON s.stage_id = c.stage_id
+    WHERE c.collectible_id = _collectible_id;
+
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
 -- procedure Q_Get_Game_By_ID
 -- -----------------------------------------------------
 

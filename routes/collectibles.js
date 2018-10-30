@@ -3,6 +3,9 @@ const router = express.Router();
 
 const collectibleController = require('../controllers/collectibleController');
 
+//Get collectible by ID
+router.route('/:id').get(collectibleController.getCollectibleByID);
+
 //Get armor by ID
 router.route('/armor/:id').get(collectibleController.getArmorByID);
 
