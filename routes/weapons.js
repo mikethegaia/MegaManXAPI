@@ -3,6 +3,9 @@ const router = express.Router();
 
 const weaponController = require('../controllers/weaponController');
 
+//Get weapon by ID
+router.route('/:id').get(weaponController.getWeaponByID);
+
 //Insert weapon
 router.route('/').post(weaponController.insertWeapon);
 

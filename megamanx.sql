@@ -305,7 +305,7 @@ BEGIN
     AND x.x_armor_id = _x_armor_id;
     
     -- Head
-    SELECT h.collectible_id as id, h.c_name as 'name',
+    SELECT h.collectible_id as id, h.c_name as 'name', h.description,
     s.stage_id, s.s_name as 'stage', h.image as 'image'
     FROM collectible h
     INNER JOIN stage s
@@ -315,7 +315,7 @@ BEGIN
     WHERE x.x_armor_id = _x_armor_id;
     
     -- Body
-    SELECT b.collectible_id as id, b.c_name as 'name',
+    SELECT b.collectible_id as id, b.c_name as 'name', b.description,
     s.stage_id, s.s_name as 'stage', b.image as 'image'
     FROM collectible b
     INNER JOIN stage s
@@ -325,7 +325,7 @@ BEGIN
     WHERE x.x_armor_id = _x_armor_id;
     
     -- Arm
-    SELECT a.collectible_id as id, a.c_name as 'name',
+    SELECT a.collectible_id as id, a.c_name as 'name', a.description,
     s.stage_id, s.s_name as 'stage', a.image as 'image'
     FROM collectible a
     INNER JOIN stage s
@@ -335,7 +335,7 @@ BEGIN
     WHERE x.x_armor_id = _x_armor_id;
     
     -- Foot
-    SELECT f.collectible_id as id, f.c_name as 'name',
+    SELECT f.collectible_id as id, f.c_name as 'name', f.description,
     s.stage_id, s.s_name as 'stage', f.image as 'image'
     FROM collectible f
     INNER JOIN stage s
@@ -479,6 +479,116 @@ BEGIN
     INNER JOIN rel_game_player gp
     ON g.game_id = gp.game_id
     WHERE gp.player_id = _player_id;
+    
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure Q_Get_Weapon_By_ID
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Weapon_By_ID`(
+	IN _weapon_id INT
+)
+BEGIN
+    
+    DECLARE cursor_id INT;
+    DECLARE cursor_title VARCHAR(45);
+    DECLARE cursor_image VARCHAR(45);
+    DECLARE done INT DEFAULT FALSE;
+
+	DECLARE cursor_g CURSOR FOR 
+    SELECT g.game_id, g.title as 'game', g.image
+    FROM game g
+    INNER JOIN rel_boss_weapon bw
+    ON g.game_id = bw.game_id
+    WHERE bw.weapon_id = _weapon_id
+    GROUP BY g.game_id;
+    
+    DECLARE cursor_g2 CURSOR FOR
+    SELECT g.game_id, g.title as 'game', g.image
+    FROM game g
+    INNER JOIN rel_boss_weapon bw
+    ON g.game_id = bw.game_id
+    WHERE bw.weapon_id = _weapon_id
+    GROUP BY g.game_id;
+    
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+	-- Weapon details
+    SELECT weapon_id as id, w_name as 'name', image
+    FROM weapon
+    WHERE weapon_id = _weapon_id;
+    
+    -- Games
+    CREATE TEMPORARY TABLE w_games
+    SELECT g.game_id, g.title as 'game', g.image
+    FROM game g
+    INNER JOIN rel_boss_weapon bw
+    ON g.game_id = bw.game_id
+    WHERE bw.weapon_id = _weapon_id
+    GROUP BY g.game_id;
+    
+    SELECT * FROM w_games;
+    DROP TEMPORARY TABLE w_games;
+    
+    -- Players
+    CREATE TEMPORARY TABLE w_players
+    (player_id INT, name VARCHAR(45), image VARCHAR(45));
+    
+    OPEN cursor_g;
+    games_loop : LOOP
+		FETCH cursor_g INTO cursor_id, cursor_title, cursor_image;
+        IF done THEN
+			LEAVE games_loop;
+		END IF;
+        INSERT INTO w_players
+        SELECT p.player_id, p.p_name as 'name', p.image
+        FROM player p
+        INNER JOIN rel_game_player gp
+        ON p.player_id = gp.player_id
+        WHERE gp.game_id = cursor_id;
+	END LOOP;
+	CLOSE cursor_g;
+    
+    SELECT * FROM w_players GROUP BY player_id;
+    DROP TEMPORARY TABLE w_players;
+    
+    -- Boss
+    SELECT b.boss_id, b.b_name as 'name', b.image
+    FROM boss b
+    INNER JOIN weapon w
+    ON b.boss_id = w.boss_id
+    WHERE w.weapon_id = _weapon_id;
+    
+    -- Damage Chart
+    CREATE TEMPORARY TABLE w_damage_chart
+    (game_id INT, boss_id INT, boss VARCHAR(45), base_damage INT, charged_damage INT, weakness BIT);
+    
+    SET done = FALSE;
+    
+    OPEN cursor_g2;
+    games_loop2 : LOOP
+		FETCH cursor_g2 INTO cursor_id, cursor_title, cursor_image;
+        IF done THEN
+			LEAVE games_loop2;
+		END IF;
+        INSERT INTO w_damage_chart
+        SELECT bw.game_id, b.boss_id, b.b_name as boss, 
+        bw.base_damage, bw.charged_damage, bw.weakness
+        FROM rel_boss_weapon bw
+        INNER JOIN boss b
+        ON b.boss_id = bw.boss_id
+        WHERE bw.weapon_id = _weapon_id
+        AND bw.game_id = cursor_id;
+	END LOOP;
+    CLOSE cursor_g2;
+    
+	SELECT * FROM w_damage_chart;
+    DROP TEMPORARY TABLE w_damage_chart;
     
 END$$
 

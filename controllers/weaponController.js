@@ -19,6 +19,37 @@ const ruleName = function(req)
     return req.body.name.replace(/\s/g, '');
 }
 
+//Get weapon by ID
+exports.getWeaponByID = async function (req, res)
+{
+    try 
+    {
+        let db = dbconnection.query('CALL Q_Get_Weapon_By_ID(?)', [req.params.id]);
+        let rows = await db;
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Weapon
+        rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Game
+        rows[2] = JSON.parse(JSON.stringify(rows[2]));  //Player
+        rows[3] = JSON.parse(JSON.stringify(rows[3]));  //Boss
+        rows[4] = JSON.parse(JSON.stringify(rows[4]));  //Damage Chart
+
+        rows[0][0].games = rows[1];
+        rows[0][0].games.forEach( game => game.damageChart = [] );
+        rows[0][0].players = rows[2];
+        rows[0][0].boss = rows[3];
+        rows[4].forEach( wk => {
+            wk.weakness = wk.weakness.data[0];
+            rows[0][0].games.forEach( game => {
+                if (wk.game_id === game.game_id) game.damageChart.push(wk);
+            });
+        });
+        res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
+    } catch (err)
+    {
+        console.log(err);
+        res.status(500).send({message: 'Error in DB', errors : err, data : null});
+    }
+};
+
 //Insert weapon (by boss)
 exports.insertWeapon = async function (req, res)
 {
