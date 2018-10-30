@@ -361,32 +361,33 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Boss_By_ID`(
     DETERMINISTIC
 BEGIN
 	
-    -- Boss info
+    -- Boss details
     SELECT boss_id as id, b_name as 'name', 
     description, image
     FROM boss
     WHERE boss_id = _boss_id;
     
-    -- In-game boss info
-    SELECT g.game_id, g.title as 'game', gb.hp, 
-    s.stage_id, s.s_name as 'stage', 
-    w.weapon_id, w.w_name as 'weapon', w.image as 'weapon_image', 
-    wk.w_name as 'weakness_id', wk.w_name as 'weakness', wk.image as 'weakness_image'
+    -- Games
+    SELECT g.game_id, g.title, g.image,
+    gb.hp, s.stage_id, s.s_name as 'stage'
     FROM rel_game_boss gb
     INNER JOIN game g
     ON g.game_id = gb.game_id
     INNER JOIN stage s
     ON s.stage_id = gb.stage_id
-    INNER JOIN boss b
-    ON b.boss_id = gb.boss_id
-    LEFT JOIN weapon w
-    ON b.boss_id = w.boss_id
-    LEFT JOIN rel_boss_weapon bw
-    ON b.boss_id = bw.boss_id
-    LEFT JOIN weapon wk
+    WHERE gb.boss_id = _boss_id;
+    
+    -- Weapons
+    SELECT weapon_id, w_name as 'weapon', image
+    FROM weapon
+    WHERE boss_id = _boss_id;
+    
+    -- Weaknesses
+    SELECT bw.game_id, wk.weapon_id as weakness_id, wk.w_name as weakness, wk.image
+    FROM weapon wk
+    INNER JOIN rel_boss_weapon bw
     ON wk.weapon_id = bw.weapon_id
-    WHERE b.boss_id = _boss_id;
-    -- AND bw.weakness = 1;
+    WHERE bw.boss_id = _boss_id;
     
 END$$
 

@@ -26,9 +26,24 @@ exports.getBossByID = async function (req, res)
     {
         let db = dbconnection.query('CALL Q_Get_Boss_By_ID(?)', [req.params.id]);
         let rows = await db;
-        rows[0] = JSON.parse(JSON.stringify(rows[0]));
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Boss
+        rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Games
+        rows[2] = JSON.parse(JSON.stringify(rows[2]));  //Weapons
+        rows[3] = JSON.parse(JSON.stringify(rows[3]));  //Weaknesses
         if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such boss'};
-        rows[0][0].infoPerGame = JSON.parse(JSON.stringify(rows[1]));
+        rows[0][0].games = rows[1];
+        rows[0][0].games.forEach( game => game.weaknesses = [] );
+        rows[0][0].weapons = rows[2];
+        rows[3].forEach( weakness => {
+            rows[0][0].games.forEach( game => {
+                if (weakness.game_id === game.game_id)
+                {
+                    weaknessSans = weakness;
+                    delete weaknessSans.game_id;
+                    game.weaknesses.push(weaknessSans);
+                }
+            });
+        });
         res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
     } catch (err)
     {
