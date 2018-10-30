@@ -485,6 +485,46 @@ END$$
 DELIMITER ;
 
 -- -----------------------------------------------------
+-- procedure Q_Get_Stage_By_ID
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Stage_By_ID`(
+	IN _stage_id INT
+)
+BEGIN
+
+	-- Stage details
+    SELECT stage_id as id, s_name as 'name', description, image
+    FROM stage
+    WHERE stage_id = _stage_id;
+    
+    -- Boss
+    SELECT b.boss_id, b.b_name as 'name', b.image
+    FROM boss b
+    INNER JOIN rel_game_boss gb
+    ON gb.boss_id = b.boss_id
+    WHERE gb.stage_id = _stage_id;
+    
+    -- Games
+    SELECT g.game_id, g.title, g.image
+    FROM game g
+    INNER JOIN rel_game_boss gb
+    ON gb.game_id = g.game_id
+    WHERE gb.stage_id = _stage_id;
+    
+    -- Collectibles
+    SELECT collectible_id as id, c_name as 'name', image
+    game_id
+    FROM collectible
+    WHERE stage_id = _stage_id;
+
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
 -- procedure Q_Get_Weapon_By_ID
 -- -----------------------------------------------------
 

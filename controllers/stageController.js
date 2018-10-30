@@ -19,6 +19,41 @@ const ruleName = function(req)
     return req.body.name.replace(/\s/g, '');
 }
 
+//Get stage by ID
+exports.getStageByID = async function (req, res)
+{
+    try
+    {
+        let db = dbconnection.query('CALL Q_Get_Stage_By_ID(?)', [req.params.id]);
+        let rows = await db;
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Stage
+        rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Boss
+        rows[2] = JSON.parse(JSON.stringify(rows[2]));  //Games
+        rows[3] = JSON.parse(JSON.stringify(rows[3]));  //Collectibles
+        if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such stage'};
+        rows[0][0].boss = rows[1];
+        rows[0][0].games = rows[2];
+        rows[0][0].games.forEach( game => game.collectibles = [] );
+        rows[3].forEach( collectible => {
+            rows[0][0].games.forEach( game => {
+                if (collectible.game_id === game.game_id)
+                {
+                    collectibleSans = collectible;
+                    delete collectibleSans.game_id;
+                    game.collectibles.push(collectibleSans);
+                }
+            });
+        });
+        res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
+    } catch (err)
+    {
+        let status = 500;
+        console.log(err);
+        if (err.type == 'NO_SUCH_ELEMENTS') status = 404; 
+        res.status(status).send({message: 'Error in DB', errors : err, data : null});
+    }
+}
+
 //Insert stage
 
 exports.insertStage = async function (req, res)

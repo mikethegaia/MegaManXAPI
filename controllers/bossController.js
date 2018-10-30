@@ -35,7 +35,7 @@ exports.getBossByID = async function (req, res)
         let status = 500;
         console.log(err);
         if (err.type == 'NO_SUCH_ELEMENTS') status = 404; 
-        res.status(500).send({message: 'Error in DB', errors : err, data : null});
+        res.status(status).send({message: 'Error in DB', errors : err, data : null});
     }
 };
 
