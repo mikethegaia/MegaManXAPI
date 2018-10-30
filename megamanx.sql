@@ -387,7 +387,8 @@ BEGIN
     FROM weapon wk
     INNER JOIN rel_boss_weapon bw
     ON wk.weapon_id = bw.weapon_id
-    WHERE bw.boss_id = _boss_id;
+    WHERE bw.boss_id = _boss_id
+    AND bw.weakness = 1;
     
 END$$
 
@@ -432,30 +433,49 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Game_By_ID`(
     DETERMINISTIC
 BEGIN
 
-	-- Game
+	-- Game details
 	SELECT game_id as id, title, release_date,
     story, platforms, image
     FROM game
     WHERE game_id = _game_id;
     
-    -- Characters
-    SELECT p.player_id as id, p_name as 'name',
-    image
+    -- Players
+    SELECT p.player_id as id, p_name as 'name', image
     FROM player p
     INNER JOIN rel_game_player gp
     ON p.player_id = gp.player_id
     WHERE gp.game_id = _game_id;
     
-    -- Armor sets
-    /* SELECT x_armor_id as id, x_name as 'name',
-    head_effect as head,
-	body_effect as body, arm_effect as arm,
-    foot_effect as foot, image
-    FROM x_armor
-    WHERE game_id = _game_id;*/
+    -- Stages
+    SELECT s.stage_id, s.s_name as 'name', s.image
+    FROM stage s
+    INNER JOIN collectible c
+    ON s.stage_id = c.stage_id
+    WHERE c.game_id = _game_id
+    GROUP BY s.stage_id;
+    
+    -- Armors
+    SELECT x.x_armor_id, x.x_name as 'name', x.image,
+    h.collectible_id as 'head_id', h.c_name as 'head', h.image as 'head_image',
+    b.collectible_id as 'body_id', b.c_name as 'body', b.image as 'body_image',
+    a.collectible_id as 'arm_id', a.c_name as 'arm', a.image as 'arm_image',
+    f.collectible_id as 'foot_id', f.c_name as 'foot', f.image as 'foot_image'
+    FROM x_armor x
+    INNER JOIN collectible h
+    ON x.head_id = h.collectible_id
+    INNER JOIN collectible b
+    ON x.body_id = b.collectible_id
+    INNER JOIN collectible a
+    ON x.arm_id = a.collectible_id
+    INNER JOIN collectible f
+    ON x.foot_id = f.collectible_id
+    WHERE h.game_id = _game_id
+    AND b.game_id = _game_id
+    AND a.game_id = _game_id
+    AND f.game_id = _game_id;
     
     -- Weakness Chart
-    SELECT b.boss_id as id, b.b_name as 'name',
+    SELECT b.boss_id, b.b_name as 'boss',
     w.weapon_id as weapon_id, w.w_name as weapon_name,
     wk.weapon_id as weakness_id, wk.w_name as weakness_name
     FROM boss b
@@ -542,7 +562,7 @@ BEGIN
     WHERE gb.stage_id = _stage_id;
     
     -- Collectibles
-    SELECT collectible_id as id, c_name as 'name', image
+    SELECT collectible_id as id, c_name as 'name', image,
     game_id
     FROM collectible
     WHERE stage_id = _stage_id;
