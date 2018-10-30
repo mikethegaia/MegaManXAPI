@@ -23,6 +23,32 @@ const ruleName = function(req)
     return req.body.name.replace(/\s/g, '');
 }
 
+//Get armor by ID
+exports.getArmorByID = async function (req, res)
+{
+    try 
+    {
+        let db = dbconnection.query('CALL Q_Get_Armor_By_ID(?)', [req.params.id]);
+        let rows = await db;
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Armor
+        rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Games
+        rows[2] = JSON.parse(JSON.stringify(rows[2]));  //Head
+        rows[3] = JSON.parse(JSON.stringify(rows[3]));  //Body
+        rows[4] = JSON.parse(JSON.stringify(rows[4]));  //Arm
+        rows[5] = JSON.parse(JSON.stringify(rows[5]));  //Foot
+        rows[0][0].games = JSON.parse(JSON.stringify(rows[1]));
+        rows[0][0].head = JSON.parse(JSON.stringify(rows[2]));
+        rows[0][0].body = JSON.parse(JSON.stringify(rows[3]));
+        rows[0][0].arm = JSON.parse(JSON.stringify(rows[4]));
+        rows[0][0].foot = JSON.parse(JSON.stringify(rows[5]));
+        res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
+    } catch (err)
+    {
+        console.log(err);
+        res.status(500).send({message: 'Error in DB', errors : err, data : null});
+    }
+};
+
 //Insert collectible by stage and game
 exports.insertCollectibleByStageGame = async function (req, res)
 {

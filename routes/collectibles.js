@@ -3,6 +3,9 @@ const router = express.Router();
 
 const collectibleController = require('../controllers/collectibleController');
 
+//Get armor by ID
+router.route('/armor/:id').get(collectibleController.getArmorByID);
+
 //Insert collectible by stage and game
 router.route('/stage/:stage_id/game/:game_id').post(collectibleController.insertCollectibleByStageGame);
 

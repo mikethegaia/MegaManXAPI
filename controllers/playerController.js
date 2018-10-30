@@ -19,6 +19,26 @@ const ruleName = function(req)
     return req.body.name.replace(/\s/g, '');
 }
 
+//Get player by id
+exports.getPlayerByID = async function (req, res)
+{
+    try 
+    {
+        let db = dbconnection.query('CALL Q_Get_Player_By_ID(?)', [req.params.id]);
+        let rows = await db;
+        rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Player
+        rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Main Weapons
+        rows[2] = JSON.parse(JSON.stringify(rows[2]));  //Games
+        rows[0][0].mainWeapons = JSON.parse(JSON.stringify(rows[1]));
+        rows[0][0].games = JSON.parse(JSON.stringify(rows[2]));
+        res.status(200).send({message: 'Success', errors : null, data : rows[0][0]});
+    } catch (err)
+    {
+        console.log(err);
+        res.status(500).send({message: 'Error in DB', errors : err, data : null});
+    }
+};
+
 //Insert player by games
 exports.insertPlayerByGames = async function (req, res)
 {

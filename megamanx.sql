@@ -271,6 +271,84 @@ COLLATE = utf8mb4_0900_ai_ci;
 USE `megamanx` ;
 
 -- -----------------------------------------------------
+-- procedure Q_Get_Armor_By_ID
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Armor_By_ID`(
+	IN _x_armor_id INT
+)
+BEGIN
+	
+    -- Armor details
+    SELECT x_armor_id as id, x_name as 'name', image
+    FROM x_armor
+    WHERE x_armor_id = _x_armor_id;
+    
+    -- Games
+	SELECT g.game_id as id, g.title, g.image
+    FROM game g
+    INNER JOIN collectible h
+    ON g.game_id = h.game_id
+    INNER JOIN collectible b
+    ON g.game_id = b.game_id
+    INNER JOIN collectible a
+    ON g.game_id = a.game_id
+    INNER JOIN collectible f
+    ON g.game_id = f.game_id,
+    x_armor x
+    WHERE x.head_id = h.collectible_id
+    AND x.body_id = b.collectible_id
+    AND x.arm_id = a.collectible_id
+    AND x.foot_id = f.collectible_id
+    AND x.x_armor_id = _x_armor_id;
+    
+    -- Head
+    SELECT h.collectible_id as id, h.c_name as 'name',
+    s.stage_id, s.s_name as 'stage', h.image as 'image'
+    FROM collectible h
+    INNER JOIN stage s
+    ON s.stage_id = h.stage_id
+    INNER JOIN x_armor x
+    ON x.head_id = h.collectible_id
+    WHERE x.x_armor_id = _x_armor_id;
+    
+    -- Body
+    SELECT b.collectible_id as id, b.c_name as 'name',
+    s.stage_id, s.s_name as 'stage', b.image as 'image'
+    FROM collectible b
+    INNER JOIN stage s
+    ON s.stage_id = b.stage_id
+    INNER JOIN x_armor x
+    ON x.body_id = b.collectible_id
+    WHERE x.x_armor_id = _x_armor_id;
+    
+    -- Arm
+    SELECT a.collectible_id as id, a.c_name as 'name',
+    s.stage_id, s.s_name as 'stage', a.image as 'image'
+    FROM collectible a
+    INNER JOIN stage s
+    ON s.stage_id = a.stage_id
+    INNER JOIN x_armor x
+    ON x.arm_id = a.collectible_id
+    WHERE x.x_armor_id = _x_armor_id;
+    
+    -- Foot
+    SELECT f.collectible_id as id, f.c_name as 'name',
+    s.stage_id, s.s_name as 'stage', f.image as 'image'
+    FROM collectible f
+    INNER JOIN stage s
+    ON s.stage_id = f.stage_id
+    INNER JOIN x_armor x
+    ON x.foot_id = f.collectible_id
+    WHERE x.x_armor_id = _x_armor_id;
+    
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
 -- procedure Q_Get_Boss_By_ID
 -- -----------------------------------------------------
 
@@ -366,6 +444,42 @@ BEGIN
     AND bw.game_id = _game_id
     AND bw.weakness = 1;
 
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure Q_Get_Player_By_ID
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `megamanx`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Q_Get_Player_By_ID`(
+	IN _player_id INT
+)
+BEGIN
+	
+    -- Player details
+    SELECT player_id as id, p_name as 'name', description,
+    gender, image
+    FROM player
+    WHERE player_id = _player_id;
+    
+    -- Main weapons
+    SELECT w.weapon_id as id, w.w_name as weapon, w.image as image
+    FROM weapon w
+    INNER JOIN rel_player_weapon pw
+    ON w.weapon_id = pw.weapon_id
+    WHERE pw.player_id = _player_id
+    AND w.boss_id IS NULL;
+    
+    -- Games
+    SELECT g.game_id as id, g.title, g.image
+    FROM game g
+    INNER JOIN rel_game_player gp
+    ON g.game_id = gp.game_id
+    WHERE gp.player_id = _player_id;
+    
 END$$
 
 DELIMITER ;
