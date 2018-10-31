@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
+const settings = require('../utils/settings');
 
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
@@ -28,7 +29,7 @@ exports.getCollectibleByID = async function (req, res)
 {
     try
     {
-        let db = dbconnection.query('CALL Q_Get_Collectible_By_ID(?)', [req.params.id]);
+        let db = dbconnection.query(settings.QUERIES.GETCOLLECTIBLE, [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Collectible
         if (rows[0].length < 1) throw {type: 'NO_SUCH_ELEMENTS', message: 'There is no such collectible'};
@@ -47,7 +48,7 @@ exports.getArmorByID = async function (req, res)
 {
     try 
     {
-        let db = dbconnection.query('CALL Q_Get_Armor_By_ID(?)', [req.params.id]);
+        let db = dbconnection.query(settings.QUERIES.GETARMOR, [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Armor
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Games
@@ -78,7 +79,7 @@ exports.insertCollectibleByStageGame = async function (req, res)
     {
         await upload([media], ruleLastDirCollectible, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
-        let db = dbconnection.query('CALL Q_Insert_Collectible(?,?,?,?,?)', [req.body.name, req.body.description, req.file.filename, req.params.stage_id, req.params.game_id]);
+        let db = dbconnection.query(settings.QUERIES.INSERTCOLLECTIBLE, [req.body.name, req.body.description, req.file.filename, req.params.stage_id, req.params.game_id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
@@ -103,7 +104,7 @@ exports.insertArmor = async function (req, res)
     {
         await upload([media], ruleLastDirArmor, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
-        let db = dbconnection.query('CALL Q_Insert_Armor(?,?,?,?,?,?)', [req.body.name, req.body.head, req.body.body, req.body.arm, req.body.foot, req.file.filename]);
+        let db = dbconnection.query(settings.QUERIES.INSERTARMOR, [req.body.name, req.body.head, req.body.body, req.body.arm, req.body.foot, req.file.filename]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};

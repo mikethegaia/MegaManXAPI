@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
+const settings = require('../utils/settings');
 
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
@@ -24,7 +25,7 @@ exports.getStageByID = async function (req, res)
 {
     try
     {
-        let db = dbconnection.query('CALL Q_Get_Stage_By_ID(?)', [req.params.id]);
+        let db = dbconnection.query(settings.QUERIES.GETSTAGE, [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Stage
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Boss
@@ -62,7 +63,7 @@ exports.insertStage = async function (req, res)
     {
         await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
-        let db = dbconnection.query('CALL Q_Insert_Stage(?,?,?)', [req.body.name, req.body.description, req.file.filename]);
+        let db = dbconnection.query(settings.QUERIES.INSERTSTAGE, [req.body.name, req.body.description, req.file.filename]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};

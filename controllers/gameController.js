@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
+const settings = require('../utils/settings');
 
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
@@ -24,7 +25,7 @@ exports.getGameByID = async function (req, res)
 {
     try 
     {
-        let db = dbconnection.query('CALL Q_Get_Game_By_ID(?)', [req.params.id]);
+        let db = dbconnection.query(settings.QUERIES.GETGAME, [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  // Game
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  // Players
@@ -76,7 +77,7 @@ exports.insertGame = async function (req, res)
     {
         await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
-        let db = dbconnection.query('CALL Q_Insert_Game(?,?,?,?,?)', [req.body.title, req.body.release_date, req.body.story,req.body.platforms, req.file.filename]);
+        let db = dbconnection.query(settings.QUERIES.INSERTGAME, [req.body.title, req.body.release_date, req.body.story,req.body.platforms, req.file.filename]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         res.status(201).send({message: 'Success', errors : null, data : rows[0][0]});

@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
+const settings = require('../utils/settings');
 
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
@@ -24,7 +25,7 @@ exports.getPlayerByID = async function (req, res)
 {
     try 
     {
-        let db = dbconnection.query('CALL Q_Get_Player_By_ID(?)', [req.params.id]);
+        let db = dbconnection.query(settings.QUERIES.GETPLAYER, [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Player
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Main Weapons
@@ -52,7 +53,7 @@ exports.insertPlayerByGames = async function (req, res)
     {
         await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
-        let db = dbconnection.query('CALL Q_Insert_Player(?,?,?,?)', [req.body.name, req.body.description, req.body.gender, req.file.filename]);
+        let db = dbconnection.query(settings.QUERIES.INSERTPLAYER, [req.body.name, req.body.description, req.body.gender, req.file.filename]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         data.push(rows[0][0]);
@@ -60,7 +61,7 @@ exports.insertPlayerByGames = async function (req, res)
 
         await Promise.map(games, function(game)
         {
-            return dbconnection.query('CALL Q_Insert_Game_Player(?,?)', [game, player_id])
+            return dbconnection.query(settings.QUERIES.INSERTGAMEPLAYER, [game, player_id])
             .then( function(rows)
             {
                 rows[0] = JSON.parse(JSON.stringify(rows[0]));
@@ -84,7 +85,7 @@ exports.insertPlayerByGames = async function (req, res)
             if (err.type == 'NO_SUCH_ELEMENTS')
             {
                 status = 404;
-                dbconnection.query('DELETE FROM player WHERE player_id = ?', [player_id])
+                dbconnection.query(settings.QUERIES.DELETEBADPLAYERREQUEST, [player_id])
             }
             res.status(status).send({message: 'Error in DB', errors : err, data : null});
         }

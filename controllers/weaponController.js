@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
+const settings = require('../utils/settings');
 
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
@@ -24,7 +25,7 @@ exports.getWeaponByID = async function (req, res)
 {
     try 
     {
-        let db = dbconnection.query('CALL Q_Get_Weapon_By_ID(?)', [req.params.id]);
+        let db = dbconnection.query(settings.QUERIES.GETWEAPON, [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Weapon
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Game
@@ -66,7 +67,7 @@ exports.insertWeapon = async function (req, res)
         if (req.imageError) throw req.imageError;
         if (req.params.boss_id) boss_id = req.params.boss_id;
         else boss_id = 0;
-        let db = dbconnection.query('CALL Q_Insert_Weapon(?,?,?)', [req.body.name, req.file.filename, boss_id]);
+        let db = dbconnection.query(settings.QUERIES.INSERTWEAPON, [req.body.name, req.file.filename, boss_id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
@@ -93,7 +94,7 @@ exports.assignWeaponPlayer = async function (req, res)
     {
         for (let i = 0; i<players.length; i++)
         {
-            await dbconnection.query('CALL Q_Insert_Player_Weapon(?,?)', [players[i], req.params.weapon_id])
+            await dbconnection.query(settings.QUERIES.INSERTPLAYERWEAPON, [players[i], req.params.weapon_id])
             .then(function (rows)
             {
                 rows[0] = JSON.parse(JSON.stringify(rows[0]));
@@ -114,7 +115,7 @@ exports.assignWeaponPlayer = async function (req, res)
             status = 404;
             Promise.map(data, function(m)
             {
-                dbconnection.query('DELETE FROM rel_player_weapon WHERE rel_player_weapon_id = ?', [m.id]);
+                dbconnection.query(settings.QUERIES.DELETEBADPLAYERWEAPONREQUEST, [m.id]);
             });
         }
         res.status(status).send({message: 'Error in DB', errors : err, data : null});
@@ -129,7 +130,7 @@ exports.insertDamageValues = async function (req, res)
     {
         if (req.body.charged_damage) charged_damage = req.body.charged_damage;
         else charged_damage = 0;
-        let db = dbconnection.query('CALL Q_Insert_Boss_Weapon(?,?,?,?,?,?)', [req.params.boss_id, req.params.weapon_id, req.params.game_id, 
+        let db = dbconnection.query(settings.QUERIES.INSERTDAMAGEVALUES, [req.params.boss_id, req.params.weapon_id, req.params.game_id, 
             req.body.base_damage, charged_damage, req.body.weakness]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));

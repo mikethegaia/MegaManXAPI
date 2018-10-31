@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const dbconnection = require('../utils/dbconnection');
 const upload = require('../utils/upload');
+const settings = require('../utils/settings');
 
 //File types allowed and storage paths
 const allowedTypes = ['image/jpeg', 'image/png'];
@@ -24,7 +25,7 @@ exports.getBossByID = async function (req, res)
 {
     try 
     {
-        let db = dbconnection.query('CALL Q_Get_Boss_By_ID(?)', [req.params.id]);
+        let db = dbconnection.query(settings.QUERIES.GETBOSS, [req.params.id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));  //Boss
         rows[1] = JSON.parse(JSON.stringify(rows[1]));  //Games
@@ -61,7 +62,7 @@ exports.insertBoss = async function (req, res)
     {
         await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
-        let db = dbconnection.query('CALL Q_Insert_Boss(?,?,?)', [req.body.name, req.body.description, req.file.filename]);
+        let db = dbconnection.query(settings.QUERIES.INSERTBOSS, [req.body.name, req.body.description, req.file.filename]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         res.status(201).send({message: 'Success', errors : null, data : rows[0][0]});
@@ -83,7 +84,7 @@ exports.insertInGameData = async function (req, res)
 {
     try
     {
-        let db = dbconnection.query('CALL Q_Insert_Game_Boss(?,?,?,?)', [req.params.game_id, req.params.boss_id, req.body.hp, req.body.stage_id]);
+        let db = dbconnection.query(settings.QUERIES.INSERTBOSSGAMEDATA, [req.params.game_id, req.params.boss_id, req.body.hp, req.body.stage_id]);
         let rows = await db;
         rows[0] = JSON.parse(JSON.stringify(rows[0]));
         if (rows[0][0].id <= 0) throw {type: 'NO_SUCH_ELEMENTS', message: rows[0][0].message};
