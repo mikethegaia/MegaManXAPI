@@ -1,24 +1,7 @@
 //Modules
-const Promise = require('bluebird');
-const path = require('path');
 const fs = require('fs');
 const dbconnection = require('../utils/dbconnection');
-const upload = require('../utils/upload');
 const settings = require('../utils/settings');
-
-//File types allowed and storage paths
-const allowedTypes = ['image/jpeg', 'image/png'];
-const media = path.join(__dirname, '../media');
-
-//Rules: creation of the last path and the file's name
-const ruleLastDir = function(req)
-{
-    return path.join(media, '/games');
-}
-const ruleName = function(req)
-{
-    return req.body.title.replace(/\s/g, '');
-}
 
 //Game by id
 exports.getGameByID = async function (req, res)
@@ -75,7 +58,6 @@ exports.insertGame = async function (req, res)
 {
     try
     {
-        await upload([media], ruleLastDir, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
         let db = dbconnection.query(settings.QUERIES.INSERTGAME, [req.body.title, req.body.release_date, req.body.story,req.body.platforms, req.file.filename]);
         let rows = await db;

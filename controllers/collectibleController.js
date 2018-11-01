@@ -1,28 +1,7 @@
 //Modules
-const Promise = require('bluebird');
-const path = require('path');
 const fs = require('fs');
 const dbconnection = require('../utils/dbconnection');
-const upload = require('../utils/upload');
 const settings = require('../utils/settings');
-
-//File types allowed and storage paths
-const allowedTypes = ['image/jpeg', 'image/png'];
-const media = path.join(__dirname, '../media');
-
-//Rules: creation of the last path and the file's name
-const ruleLastDirCollectible = function(req)
-{
-    return path.join(media, '/collectibles');
-}
-const ruleLastDirArmor = function(req)
-{
-    return path.join(media, '/armors');
-}
-const ruleName = function(req)
-{
-    return req.body.name.replace(/\s/g, '');
-}
 
 //Get collectible by Id
 exports.getCollectibleByID = async function (req, res)
@@ -77,7 +56,6 @@ exports.insertCollectibleByStageGame = async function (req, res)
 {
     try
     {
-        await upload([media], ruleLastDirCollectible, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
         let db = dbconnection.query(settings.QUERIES.INSERTCOLLECTIBLE, [req.body.name, req.body.description, req.file.filename, req.params.stage_id, req.params.game_id]);
         let rows = await db;
@@ -102,7 +80,6 @@ exports.insertArmor = async function (req, res)
 {
     try
     {
-        await upload([media], ruleLastDirArmor, ruleName, allowedTypes, 'image', req, res);
         if (req.imageError) throw req.imageError;
         let db = dbconnection.query(settings.QUERIES.INSERTARMOR, [req.body.name, req.body.head, req.body.body, req.body.arm, req.body.foot, req.file.filename]);
         let rows = await db;

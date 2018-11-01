@@ -1,3 +1,5 @@
+const path = require('path');
+
 exports.QUERIES = 
 {
     //Boss
@@ -31,4 +33,22 @@ exports.QUERIES =
     INSERTPLAYERWEAPON : 'CALL Q_Insert_Player_Weapon(?,?)',
     DELETEBADPLAYERWEAPONREQUEST : 'DELETE FROM rel_player_weapon WHERE rel_player_weapon_id = ?',
     INSERTDAMAGEVALUES : 'CALL Q_Insert_Boss_Weapon(?,?,?,?,?,?)'
+};
+
+exports.UPLOAD = 
+{
+    //All
+    RULENAME : (req, ext) => req.body.name.replace(/\s/g, '') + '-' + Date.now() + '.' + ext,
+    ALLOWEDTYPES : ['image/jpeg', 'image/png'],
+    ATTRIBUTE : 'image',
+
+    //Dirs
+    MEDIA : path.join(__dirname, '../media'),
+    ARMOR : path.join(__dirname, '../media/armors'), 
+    BOSS : path.join(__dirname, '../media/bosses'),
+    COLLECTIBLE : path.join(__dirname, '../media/collectibles'),
+    GAME : path.join(__dirname, '../media/games'),
+    PLAYER : path.join(__dirname, '../media/players'),
+    STAGE : path.join(__dirname, '../media/stages'),
+    WEAPON : path.join(__dirname, '../media/weapons')
 };
