@@ -869,7 +869,26 @@ BEGIN
     IF _count_stage = 0 THEN
 		SELECT _count_stage as id, 'There is no such stage.' as message;
 	ELSEIF _count_game = 0 THEN
-		SELECT _count_game as id, 'There is no such game.' as message;
+		IF _stage_id = 0 THEN
+			INSERT INTO collectible
+			(c_name,
+			description,
+			image,
+			stage_id,
+			game_id
+			)
+			VALUES
+			(_c_name,
+			_description,
+			_image,
+			NULL,
+			_game_id
+			);
+        
+			SELECT LAST_INSERT_ID() as id, 'Success' as message;
+		ELSE
+			SELECT _count_game as id, 'There is no such game.' as message;
+        END IF;
 	ELSE 
 		INSERT INTO collectible
         (c_name,
